@@ -3,16 +3,12 @@ import axios from 'axios';
 import { 
   Folder as FolderIcon, 
   FileText, 
-  Loader2, 
   CheckCircle, 
   AlertCircle, 
   Upload, 
   Edit3, 
   Shield,
-  Sparkles,
   Globe,
-  Wifi,
-  WifiOff,
   Star,
   ArrowRight,
   Lock,
@@ -35,7 +31,7 @@ interface Folder {
 function App() {
   const [activeTab, setActiveTab] = useState<'google-drive' | 'upload' | 'text'>('google-drive');
   const [folders, setFolders] = useState<Folder[]>([]);
-  const [selectedFolder, setSelectedFolder] = useState<Folder | null>(null);
+
   const [error, setError] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [connectionLoading, setConnectionLoading] = useState(false);
@@ -134,9 +130,7 @@ function App() {
     }
   }, [API_BASE_URL]);
 
-  const handleFolderSelect = useCallback((folder: Folder) => {
-    setSelectedFolder(folder);
-  }, []);
+
 
   const handleRetry = () => {
     setError(null);
@@ -280,7 +274,6 @@ function App() {
                           {folders.map((folder) => (
                             <button
                               key={folder.id}
-                              onClick={() => handleFolderSelect(folder)}
                               className="w-full flex items-center space-x-3 p-4 bg-white hover:bg-gray-50 border border-gray-200 rounded-lg transition-colors"
                             >
                               <FolderIcon className="w-5 h-5 text-blue-600" />
