@@ -20,6 +20,8 @@ import DemoAnalyzer from './components/DemoAnalyzer';
 import FileUploader from './components/FileUploader';
 import './App.css';
 
+// Force redeploy - 2024-08-04 16:30:00
+
 interface Folder {
   id: string;
   name: string;
