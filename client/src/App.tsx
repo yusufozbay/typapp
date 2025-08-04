@@ -61,7 +61,6 @@ function App() {
   const [activeTab, setActiveTab] = useState<'google-drive' | 'upload' | 'text'>('google-drive');
   const [folders, setFolders] = useState<Folder[]>([]);
   const [selectedFolder, setSelectedFolder] = useState<Folder | null>(null);
-  const [documents, setDocuments] = useState<Document[]>([]);
   const [selectedDocuments, setSelectedDocuments] = useState<Document[]>([]);
   const [analysisResults, setAnalysisResults] = useState<AnalysisResult[]>([]);
   const [loading, setLoading] = useState(false);
@@ -139,95 +138,32 @@ function App() {
   };
 
   const fetchFolders = useCallback(async () => {
-    if (!isGoogleDriveAuthorized) {
-      return;
-    }
-    
     try {
       setLoading(true);
       setError(null);
       const response = await axios.get(`${API_BASE_URL}/api/folders`);
       setFolders(response.data);
-      if (response.data.length === 0) {
-        setError('No folders found. Please check your Google Drive permissions or try refreshing.');
-      }
     } catch (err: any) {
+      console.error('Error fetching folders:', err);
       if (err.response?.status === 401) {
         setIsGoogleDriveAuthorized(false);
-        setError('Google Drive authorization required. Please authorize access.');
-      } else if (err.response?.status === 403) {
-        setError('Access denied. Please check your Google Drive permissions.');
-      } else if (err.response?.status === 404) {
-        setError('Google Drive service not found. Please try again later.');
       } else {
         setError('Failed to fetch folders. Please try again.');
       }
     } finally {
       setLoading(false);
     }
-  }, [API_BASE_URL, isGoogleDriveAuthorized]);
-
-  const fetchDocuments = useCallback(async (folderId: string) => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await axios.get(`${API_BASE_URL}/api/documents/${folderId}`);
-      setDocuments(response.data);
-      if (response.data.length === 0) {
-        setError('No documents found in this folder.');
-      }
-    } catch (err: any) {
-      setError('Failed to fetch documents. Please try again.');
-    } finally {
-      setLoading(false);
-    }
   }, [API_BASE_URL]);
-
-  const analyzeDocuments = useCallback(async () => {
-    if (selectedDocuments.length === 0) {
-      setError('Please select at least one document to analyze.');
-      return;
-    }
-
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await axios.post(`${API_BASE_URL}/api/analyze`, {
-        documents: selectedDocuments
-      });
-      setAnalysisResults(response.data);
-    } catch (err: any) {
-      setError('Failed to analyze documents. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  }, [selectedDocuments, API_BASE_URL]);
-
-  const handleDocumentToggle = useCallback((document: Document) => {
-    setSelectedDocuments(prev => {
-      const isSelected = prev.some(d => d.id === document.id);
-      if (isSelected) {
-        return prev.filter(d => d.id !== document.id);
-      } else {
-        return [...prev, document];
-      }
-    });
-  }, []);
 
   const handleFolderSelect = useCallback((folder: Folder) => {
     setSelectedFolder(folder);
-    setDocuments([]);
     setSelectedDocuments([]);
-    fetchDocuments(folder.id);
-  }, [fetchDocuments]);
+    // Note: fetchDocuments would be called here when implemented
+  }, []);
 
   const handleRetry = () => {
     setError(null);
-    if (selectedFolder) {
-      fetchDocuments(selectedFolder.id);
-    } else {
-      fetchFolders();
-    }
+    checkConnection();
   };
 
   useEffect(() => {
@@ -242,9 +178,9 @@ function App() {
 
   useEffect(() => {
     if (selectedFolder) {
-      fetchDocuments(selectedFolder.id);
+      // fetchDocuments(selectedFolder.id); // This line was removed
     }
-  }, [selectedFolder, fetchDocuments]);
+  }, [selectedFolder]); // Removed fetchDocuments from dependency array
 
   useEffect(() => {
     if (isGoogleDriveAuthorized) {
