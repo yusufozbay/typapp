@@ -35,28 +35,6 @@ interface Folder {
   parents?: string[];
 }
 
-interface Document {
-  id: string;
-  name: string;
-  createdTime: string;
-  modifiedTime: string;
-}
-
-interface AnalysisResult {
-  documentTitle: string;
-  language: string;
-  spellingErrors: Array<{ original: string; corrected: string }>;
-  grammarErrors: Array<{
-    original: string;
-    explanation: string;
-    corrected: string;
-  }>;
-  styleSuggestions: Array<{
-    original: string;
-    suggestion: string;
-  }>;
-}
-
 function App() {
   const [activeTab, setActiveTab] = useState<'google-drive' | 'upload' | 'text'>('google-drive');
   const [folders, setFolders] = useState<Folder[]>([]);
