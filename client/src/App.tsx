@@ -21,6 +21,8 @@ import FileUploader from './components/FileUploader';
 import './App.css';
 
 // Force redeploy - 2024-08-04 16:30:00
+// UI Version: 2.0 - Modern Glassmorphism Design
+// Cache bust: v2.0.1
 
 interface Folder {
   id: string;
