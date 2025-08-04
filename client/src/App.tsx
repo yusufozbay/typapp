@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Folder, FileText, Search, Loader2, CheckCircle, AlertCircle, Upload, Edit3 } from 'lucide-react';
+import { Folder as FolderIcon, FileText, Search, Loader2, CheckCircle, AlertCircle, Upload, Edit3 } from 'lucide-react';
 import DemoAnalyzer from './components/DemoAnalyzer';
 import FileUploader from './components/FileUploader';
 import './App.css';
@@ -160,7 +160,7 @@ function App() {
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
-                <Folder className="inline mr-2" size={16} />
+                <FolderIcon className="inline mr-2" size={16} />
                 Google Drive
               </button>
               <button
@@ -195,7 +195,7 @@ function App() {
             {activeTab === 'drive' && (
               <>
                 <h2 className="text-2xl font-semibold text-gray-900 mb-6 flex items-center">
-                  <Folder className="mr-2 text-blue-600" size={24} />
+                  <FolderIcon className="mr-2 text-blue-600" size={24} />
                   Select Google Drive Folder
                 </h2>
 

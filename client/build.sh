@@ -10,8 +10,9 @@ npm install --legacy-peer-deps --force
 echo "🔧 Fixing dependency issues..."
 npm audit fix --force || true
 
-# Build the application
+# Build the application with legacy OpenSSL provider
 echo "🏗️ Building React app..."
+export NODE_OPTIONS="--openssl-legacy-provider"
 npm run build
 
 echo "✅ Build completed!" 
