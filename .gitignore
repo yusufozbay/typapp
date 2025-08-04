@@ -12,6 +12,9 @@ node_modules/
 # Google Service Account Key
 server/service-account-key.json
 
+# Uploaded files
+server/uploads/
+
 # Build outputs
 client/build/
 client/dist/

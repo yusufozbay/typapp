@@ -4,13 +4,17 @@ A modern web application that integrates with Google Drive to analyze and edit d
 
 ## Features
 
-- 🔍 **Google Drive Integration**: Seamlessly connect to your Google Drive and select folders
+- 🔍 **Multiple Upload Methods**: 
+  - Google Drive integration for cloud documents
+  - File upload (PDF, DOCX, DOC, TXT) with drag & drop
+  - Direct text input for quick analysis
 - 📄 **Multi-Language Support**: Analyze documents in Turkish, English, German, and French
 - ✍️ **Professional Editing**: Detect and correct spelling mistakes, grammar errors, and syntax issues
 - 🎨 **Style Suggestions**: Get optional style improvements for better readability
 - 🎯 **Preserve Intent**: Maintain your original tone and meaning while fixing technical issues
 - 📱 **Modern UI**: Beautiful, responsive interface built with React and Tailwind CSS
 - ⚡ **Real-time Analysis**: Fast document processing with immediate results
+- 🤖 **AI-Powered**: Enhanced analysis using Google Gemini AI
 
 ## Tech Stack
 
@@ -135,11 +139,25 @@ Deploy the backend to Railway, Render, or Heroku:
 
 ## Usage
 
-1. **Open the Application**: Navigate to `http://localhost:3000`
-2. **Select a Folder**: Choose a Google Drive folder from the dropdown
+### Google Drive Analysis
+1. **Select Google Drive Tab**: Click on the "Google Drive" tab
+2. **Choose a Folder**: Select a Google Drive folder from the dropdown
 3. **Select Documents**: Check the documents you want to analyze
 4. **Analyze**: Click "Analyze Documents" to start the process
-5. **Review Results**: View spelling errors, grammar corrections, and style suggestions
+
+### File Upload Analysis
+1. **Select File Upload Tab**: Click on the "File Upload" tab
+2. **Upload File**: Drag & drop or click to upload PDF, DOCX, DOC, or TXT files
+3. **Analyze**: Click "Analyze File" to process the document
+
+### Direct Text Analysis
+1. **Select Text Input Tab**: Click on the "Text Input" tab
+2. **Enter Content**: Type or paste your text directly
+3. **Analyze**: Click "Analyze Text" to get instant results
+
+### Review Results
+- View spelling errors, grammar corrections, and style suggestions
+- All analysis results are displayed in the right panel
 
 ## API Endpoints
 
@@ -148,6 +166,8 @@ Deploy the backend to Railway, Render, or Heroku:
 - `GET /api/folder/:folderId/documents` - Get documents in a specific folder
 - `GET /api/document/:documentId` - Get document content
 - `POST /api/analyze` - Analyze selected documents
+- `POST /api/upload-file` - Upload and analyze files (PDF, DOCX, DOC, TXT)
+- `POST /api/analyze-demo` - Analyze direct text input
 
 ## Analysis Output Format
 

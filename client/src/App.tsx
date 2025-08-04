@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Folder, FileText, Search, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
+import { Folder, FileText, Search, Loader2, CheckCircle, AlertCircle, Upload, Edit3 } from 'lucide-react';
 import DemoAnalyzer from './components/DemoAnalyzer';
+import FileUploader from './components/FileUploader';
 import './App.css';
 
 interface Folder {
@@ -40,6 +41,7 @@ interface AnalysisResult {
 }
 
 function App() {
+  const [activeTab, setActiveTab] = useState<'drive' | 'upload' | 'text'>('drive');
   const [folders, setFolders] = useState<Folder[]>([]);
   const [selectedFolder, setSelectedFolder] = useState<Folder | null>(null);
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -146,13 +148,56 @@ function App() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Panel - Folder and Document Selection */}
+        {/* Tab Navigation */}
+        <div className="flex justify-center mb-8">
+          <div className="bg-white rounded-lg p-1 shadow-md">
+            <div className="flex space-x-1">
+              <button
+                onClick={() => setActiveTab('drive')}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  activeTab === 'drive'
+                    ? 'bg-blue-600 text-white'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <Folder className="inline mr-2" size={16} />
+                Google Drive
+              </button>
+              <button
+                onClick={() => setActiveTab('upload')}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  activeTab === 'upload'
+                    ? 'bg-orange-600 text-white'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <Upload className="inline mr-2" size={16} />
+                File Upload
+              </button>
+              <button
+                onClick={() => setActiveTab('text')}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  activeTab === 'text'
+                    ? 'bg-purple-600 text-white'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <Edit3 className="inline mr-2" size={16} />
+                Text Input
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Left Panel - Content Selection */}
           <div className="bg-white rounded-xl shadow-lg p-6">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-6 flex items-center">
-              <Folder className="mr-2 text-blue-600" size={24} />
-              Select Google Drive Folder
-            </h2>
+            {activeTab === 'drive' && (
+              <>
+                <h2 className="text-2xl font-semibold text-gray-900 mb-6 flex items-center">
+                  <Folder className="mr-2 text-blue-600" size={24} />
+                  Select Google Drive Folder
+                </h2>
 
             {/* Folder Selection */}
             <div className="mb-6">
@@ -235,9 +280,19 @@ function App() {
                 )}
               </div>
             )}
+              </>
+            )}
+
+            {activeTab === 'upload' && (
+              <FileUploader />
+            )}
+
+            {activeTab === 'text' && (
+              <DemoAnalyzer />
+            )}
           </div>
 
-          {/* Middle Panel - Analysis Results */}
+          {/* Right Panel - Analysis Results */}
           <div className="bg-white rounded-xl shadow-lg p-6">
             <h2 className="text-2xl font-semibold text-gray-900 mb-6 flex items-center">
               <CheckCircle className="mr-2 text-green-600" size={24} />
@@ -320,8 +375,6 @@ function App() {
             )}
           </div>
 
-          {/* Right Panel - Demo Analyzer */}
-          <DemoAnalyzer />
         </div>
       </div>
     </div>

@@ -2,7 +2,12 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 const { google } = require('googleapis');
+const mammoth = require('mammoth');
+const pdfParse = require('pdf-parse');
 require('dotenv').config();
 
 const app = express();
@@ -19,6 +24,41 @@ const limiter = rateLimit({
   max: 100 // limit each IP to 100 requests per windowMs
 });
 app.use(limiter);
+
+// File upload configuration
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const uploadDir = path.join(__dirname, 'uploads');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + '-' + file.originalname);
+  }
+});
+
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 10 * 1024 * 1024 // 10MB limit
+  },
+  fileFilter: function (req, file, cb) {
+    const allowedTypes = [
+      'application/pdf',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/msword',
+      'text/plain'
+    ];
+    
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type. Only PDF, DOCX, DOC, and TXT files are allowed.'), false);
+    }
+  }
+});
 
 // Google Drive API setup
 const drive = google.drive('v3');
@@ -141,6 +181,73 @@ app.post('/api/analyze-demo', async (req, res) => {
     console.error('Error analyzing demo document:', error);
     res.status(500).json({ error: 'Failed to analyze document' });
   }
+});
+
+// File upload endpoint
+app.post('/api/upload-file', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const filePath = req.file.path;
+    const fileName = req.file.originalname;
+    const fileType = req.file.mimetype;
+
+    let content = '';
+
+    // Extract text based on file type
+    if (fileType === 'application/pdf') {
+      const dataBuffer = fs.readFileSync(filePath);
+      const data = await pdfParse(dataBuffer);
+      content = data.text;
+    } else if (fileType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+      const result = await mammoth.extractRawText({ path: filePath });
+      content = result.value;
+    } else if (fileType === 'application/msword') {
+      const result = await mammoth.extractRawText({ path: filePath });
+      content = result.value;
+    } else if (fileType === 'text/plain') {
+      content = fs.readFileSync(filePath, 'utf8');
+    }
+
+    // Clean up uploaded file
+    fs.unlinkSync(filePath);
+
+    if (!content.trim()) {
+      return res.status(400).json({ error: 'Could not extract text from file' });
+    }
+
+    // Analyze the extracted content
+    const analysis = await analyzeDocument({ 
+      title: fileName, 
+      content: content 
+    });
+
+    res.json({ results: [analysis] });
+  } catch (error) {
+    console.error('Error processing uploaded file:', error);
+    
+    // Clean up file if it exists
+    if (req.file && fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
+    
+    res.status(500).json({ error: 'Failed to process uploaded file' });
+  }
+});
+
+// Error handler for multer
+app.use((error, req, res, next) => {
+  if (error instanceof multer.MulterError) {
+    if (error.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({ error: 'File too large. Maximum size is 10MB.' });
+    }
+  }
+  if (error.message.includes('Invalid file type')) {
+    return res.status(400).json({ error: error.message });
+  }
+  next(error);
 });
 
 // Helper function to extract text from Google Doc
