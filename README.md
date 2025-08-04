@@ -1,6 +1,6 @@
-# Typopp - Professional Document Analysis Tool
+# Typapp - Professional Document Analysis Tool
 
-A modern web application that integrates with Google Drive to analyze and edit documents in multiple languages (Turkish, English, German, French). Typopp provides professional-grade spelling, grammar, and style corrections while preserving the original tone and intent of your documents.
+A modern web application that integrates with Google Drive to analyze and edit documents in multiple languages (Turkish, English, German, French). Typapp provides professional-grade spelling, grammar, and style corrections while preserving the original tone and intent of your documents.
 
 ## Features
 
@@ -16,16 +16,19 @@ A modern web application that integrates with Google Drive to analyze and edit d
 
 - **Frontend**: React 18, TypeScript, Tailwind CSS, Lucide React Icons
 - **Backend**: Node.js, Express.js, Google APIs
+- **AI Integration**: Google Gemini AI for advanced document analysis
 - **Authentication**: Google Service Account
 - **Styling**: Tailwind CSS with custom design system
+- **Deployment**: Netlify (Frontend), Railway/Render (Backend)
 
 ## Prerequisites
 
-Before running Typopp, you'll need:
+Before running Typapp, you'll need:
 
 1. **Node.js** (v16 or higher)
 2. **Google Cloud Project** with Drive API enabled
 3. **Google Service Account** with appropriate permissions
+4. **Google Gemini AI API Key** (optional, for enhanced analysis)
 
 ## Setup Instructions
 
@@ -33,7 +36,7 @@ Before running Typopp, you'll need:
 
 ```bash
 git clone <repository-url>
-cd Typopp
+cd Typapp
 npm run install-all
 ```
 
@@ -45,7 +48,7 @@ npm run install-all
 4. Create a Service Account:
    - Go to "IAM & Admin" > "Service Accounts"
    - Click "Create Service Account"
-   - Give it a name (e.g., "typopp-service")
+   - Give it a name (e.g., "typapp-service")
    - Grant "Editor" role
 5. Create and download a JSON key file
 6. Place the key file in the `server/` directory as `service-account-key.json`
@@ -60,6 +63,7 @@ npm run install-all
 2. Update the `.env` file with your configuration:
    ```env
    GOOGLE_APPLICATION_CREDENTIALS=./server/service-account-key.json
+   GEMINI_API_KEY=your_gemini_api_key_here
    PORT=5000
    NODE_ENV=development
    ```
@@ -88,6 +92,46 @@ This will start both the backend server (port 5000) and frontend development ser
 npm run build
 npm start
 ```
+
+## Netlify Deployment
+
+### Frontend Deployment
+
+1. **Connect to Netlify**:
+   - Go to [Netlify](https://netlify.com) and sign up/login
+   - Click "New site from Git"
+   - Connect your GitHub repository: `https://github.com/yusufozbay/typapp`
+
+2. **Configure Build Settings**:
+   - Build command: `cd client && npm install && npm run build`
+   - Publish directory: `client/build`
+
+3. **Set Environment Variables**:
+   In Netlify dashboard → Site settings → Environment variables:
+   ```
+   REACT_APP_API_URL=https://your-backend-url.com
+   REACT_APP_GEMINI_API_KEY=your_gemini_api_key_here
+   ```
+
+4. **Deploy**: Click "Deploy site"
+
+### Backend Deployment
+
+Deploy the backend to Railway, Render, or Heroku:
+
+1. **Railway** (Recommended):
+   - Go to [Railway](https://railway.app)
+   - Connect your GitHub repository
+   - Set the root directory to `server`
+   - Add environment variables:
+     ```
+     GEMINI_API_KEY=your_gemini_api_key_here
+     GOOGLE_APPLICATION_CREDENTIALS=your_service_account_json_content
+     ```
+
+2. **Update Frontend API URL**:
+   - Copy your backend URL from Railway
+   - Update `REACT_APP_API_URL` in Netlify environment variables
 
 ## Usage
 

@@ -58,10 +58,12 @@ function App() {
     }
   }, [selectedFolder]);
 
+  const API_BASE_URL = process.env.REACT_APP_API_URL || '';
+
   const fetchFolders = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('/api/folders');
+      const response = await axios.get(`${API_BASE_URL}/api/folders`);
       setFolders(response.data);
     } catch (err) {
       setError('Failed to fetch folders. Please check your Google Drive connection.');
@@ -73,7 +75,7 @@ function App() {
   const fetchDocuments = async (folderId: string) => {
     try {
       setLoading(true);
-      const response = await axios.get(`/api/folder/${folderId}/documents`);
+      const response = await axios.get(`${API_BASE_URL}/api/folder/${folderId}/documents`);
       setDocuments(response.data);
     } catch (err) {
       setError('Failed to fetch documents from the selected folder.');
@@ -106,12 +108,12 @@ function App() {
       // Fetch content for all selected documents
       const documentContents: DocumentContent[] = [];
       for (const doc of selectedDocuments) {
-        const response = await axios.get(`/api/document/${doc.id}`);
+        const response = await axios.get(`${API_BASE_URL}/api/document/${doc.id}`);
         documentContents.push(response.data);
       }
 
       // Analyze documents
-      const response = await axios.post('/api/analyze', {
+      const response = await axios.post(`${API_BASE_URL}/api/analyze`, {
         documents: documentContents
       });
 
@@ -129,7 +131,7 @@ function App() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            <span className="text-blue-600">Typ</span>opp
+            <span className="text-blue-600">Typ</span>app
           </h1>
           <p className="text-gray-600 text-lg">
             Professional document analysis and content editing

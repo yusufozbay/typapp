@@ -1,5 +1,5 @@
 {
-  "name": "typopp",
+  "name": "typapp",
   "version": "1.0.0",
   "description": "Google Drive document content analysis and editing tool",
   "main": "server/index.js",

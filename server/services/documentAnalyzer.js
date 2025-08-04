@@ -1,10 +1,15 @@
 const { LanguageDetector } = require('languagedetector');
 const natural = require('natural');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 class DocumentAnalyzer {
   constructor() {
     this.languageDetector = new LanguageDetector();
     this.tokenizer = new natural.WordTokenizer();
+    
+    // Initialize Gemini AI
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    this.geminiModel = genAI.getGenerativeModel({ model: "gemini-pro" });
     
     // Language-specific dictionaries and patterns
     this.languagePatterns = {
@@ -93,14 +98,65 @@ class DocumentAnalyzer {
       styleSuggestions: []
     };
 
-    // Perform language-specific analysis
-    if (this.languagePatterns[language]) {
-      await this.analyzeSpelling(content, language, analysis);
-      await this.analyzeGrammar(content, language, analysis);
-      await this.analyzeStyle(content, language, analysis);
+    // Use Gemini AI for advanced analysis if API key is available
+    if (process.env.GEMINI_API_KEY) {
+      try {
+        await this.analyzeWithGemini(content, language, analysis);
+      } catch (error) {
+        console.error('Gemini analysis failed, falling back to pattern matching:', error);
+        // Fall back to pattern matching
+        if (this.languagePatterns[language]) {
+          await this.analyzeSpelling(content, language, analysis);
+          await this.analyzeGrammar(content, language, analysis);
+          await this.analyzeStyle(content, language, analysis);
+        }
+      }
+    } else {
+      // Use pattern matching if no Gemini API key
+      if (this.languagePatterns[language]) {
+        await this.analyzeSpelling(content, language, analysis);
+        await this.analyzeGrammar(content, language, analysis);
+        await this.analyzeStyle(content, language, analysis);
+      }
     }
 
     return analysis;
+  }
+
+  async analyzeWithGemini(content, language, analysis) {
+    const prompt = `You are a highly experienced content editor with over 20 years of professional experience. You are fluent in Turkish, English, German, and French — with native-level mastery in grammar, spelling, and academic/formal expression.
+
+Analyze the following document content and provide corrections in the specified format. The document is in ${language} language.
+
+Document Title: ${analysis.documentTitle}
+Content: ${content}
+
+Please analyze this content and return ONLY a JSON object with the following structure:
+{
+  "spellingErrors": [{"original": "incorrect_word", "corrected": "correct_word"}],
+  "grammarErrors": [{"original": "original_sentence", "explanation": "explanation_of_error", "corrected": "corrected_sentence"}],
+  "styleSuggestions": [{"original": "original_text", "suggestion": "improved_version"}]
+}
+
+Only include actual errors and meaningful suggestions. If no errors are found, return empty arrays.`;
+
+    try {
+      const result = await this.geminiModel.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text();
+      
+      // Parse JSON response
+      const geminiAnalysis = JSON.parse(text);
+      
+      // Update analysis with Gemini results
+      analysis.spellingErrors = geminiAnalysis.spellingErrors || [];
+      analysis.grammarErrors = geminiAnalysis.grammarErrors || [];
+      analysis.styleSuggestions = geminiAnalysis.styleSuggestions || [];
+      
+    } catch (error) {
+      console.error('Error parsing Gemini response:', error);
+      throw error;
+    }
   }
 
   detectLanguage(text) {

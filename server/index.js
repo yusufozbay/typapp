@@ -35,7 +35,7 @@ const auth = new google.auth.GoogleAuth({
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', message: 'Typopp server is running' });
+  res.json({ status: 'OK', message: 'Typapp server is running' });
 });
 
 // Get Google Drive folders
@@ -202,5 +202,5 @@ function detectLanguage(text) {
 }
 
 app.listen(PORT, () => {
-  console.log(`Typopp server running on port ${PORT}`);
+  console.log(`Typapp server running on port ${PORT}`);
 }); 

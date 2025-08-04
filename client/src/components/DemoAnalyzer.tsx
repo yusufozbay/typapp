@@ -49,6 +49,8 @@ We will do it and it will occur. You should be careful while working on this pro
     setContent(sample.content);
   };
 
+  const API_BASE_URL = process.env.REACT_APP_API_URL || '';
+
   const analyzeText = async () => {
     if (!content.trim() || !title.trim()) {
       setError('Please enter both title and content');
@@ -59,7 +61,7 @@ We will do it and it will occur. You should be careful while working on this pro
       setLoading(true);
       setError(null);
 
-      const response = await axios.post('/api/analyze-demo', {
+      const response = await axios.post(`${API_BASE_URL}/api/analyze-demo`, {
         title: title.trim(),
         content: content.trim()
       });
