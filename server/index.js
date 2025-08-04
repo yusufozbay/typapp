@@ -361,14 +361,44 @@ async function analyzeDocument(document) {
 
 // Simplified language detection
 function detectLanguage(text) {
-  const turkishPattern = /[çğıöşüÇĞIİÖŞÜ]/;
-  const germanPattern = /[äöüßÄÖÜ]/;
-  const frenchPattern = /[àâäéèêëïîôöùûüÿçÀÂÄÉÈÊËÏÎÔÖÙÛÜŸÇ]/;
+  // Turkish language detection patterns
+  const turkishPatterns = [
+    /[çğıöşü]/i,  // Turkish specific characters
+    /\b(ve|veya|ile|için|bu|şu|o|ben|sen|biz|siz|onlar)\b/i,  // Common Turkish words
+    /\b(bir|iki|üç|dört|beş|altı|yedi|sekiz|dokuz|on)\b/i,  // Turkish numbers
+    /\b(evet|hayır|tamam|güzel|iyi|kötü|büyük|küçük)\b/i  // Common Turkish adjectives
+  ];
   
-  if (turkishPattern.test(text)) return 'Turkish';
-  if (germanPattern.test(text)) return 'German';
-  if (frenchPattern.test(text)) return 'French';
-  return 'English';
+  // English language detection patterns
+  const englishPatterns = [
+    /\b(the|and|or|for|this|that|i|you|we|they)\b/i,
+    /\b(one|two|three|four|five|six|seven|eight|nine|ten)\b/i,
+    /\b(yes|no|ok|good|bad|big|small)\b/i
+  ];
+  
+  // Count Turkish patterns
+  let turkishCount = 0;
+  turkishPatterns.forEach(pattern => {
+    const matches = text.match(pattern);
+    if (matches) turkishCount += matches.length;
+  });
+  
+  // Count English patterns
+  let englishCount = 0;
+  englishPatterns.forEach(pattern => {
+    const matches = text.match(pattern);
+    if (matches) englishCount += matches.length;
+  });
+  
+  // Determine language based on pattern count
+  if (turkishCount > englishCount) {
+    return 'Turkish';
+  } else if (englishCount > turkishCount) {
+    return 'English';
+  } else {
+    // Default to Turkish if no clear pattern
+    return 'Turkish';
+  }
 }
 
 app.listen(PORT, () => {

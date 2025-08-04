@@ -12,16 +12,18 @@ import {
   Sparkles,
   Globe,
   Wifi,
-  WifiOff
+  WifiOff,
+  Zap,
+  Star,
+  ArrowRight
 } from 'lucide-react';
 import DemoAnalyzer from './components/DemoAnalyzer';
 import FileUploader from './components/FileUploader';
 import './App.css';
 
-// Clean UI Design - Professional & Modern
-// Version: 3.2 - Aggressive Cache Bust
-// Build: 2024-08-04 16:55:00
-// Cache ID: v3.2.0-20240804-165500
+// Sleek Modern UI Design - ContentAI Style
+// Version: 4.0 - Modern & Clean
+// Build: 2024-08-04 17:00:00
 
 interface Folder {
   id: string;
@@ -174,34 +176,42 @@ function App() {
   }, [fetchFolders]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <header className="bg-white/80 backdrop-blur-sm border-b border-white/20 shadow-sm">
+        <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-                <Sparkles className="w-6 h-6 text-white" />
+            <div className="flex items-center space-x-4">
+              <div className="relative">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                  <Sparkles className="w-7 h-7 text-white" />
+                </div>
+                <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">Typapp</h1>
-                <p className="text-gray-600">Professional document analysis powered by AI</p>
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+                  Typapp
+                </h1>
+                <p className="text-gray-600 font-medium">Professional document analysis powered by AI</p>
               </div>
             </div>
             
             {/* Connection Status */}
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-3">
               {connectionLoading ? (
-                <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
+                <div className="flex items-center space-x-2 text-gray-500">
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span className="text-sm font-medium">Connecting...</span>
+                </div>
               ) : isConnected ? (
-                <div className="flex items-center space-x-2 text-green-600">
+                <div className="flex items-center space-x-2 text-green-600 bg-green-50 px-4 py-2 rounded-full">
                   <Wifi className="w-5 h-5" />
-                  <span className="text-sm font-medium">Connected</span>
+                  <span className="text-sm font-semibold">Connected</span>
                 </div>
               ) : (
-                <div className="flex items-center space-x-2 text-red-600">
+                <div className="flex items-center space-x-2 text-red-600 bg-red-50 px-4 py-2 rounded-full">
                   <WifiOff className="w-5 h-5" />
-                  <span className="text-sm font-medium">Disconnected</span>
+                  <span className="text-sm font-semibold">Disconnected</span>
                 </div>
               )}
             </div>
@@ -210,16 +220,16 @@ function App() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-6 py-12">
         {/* Tab Navigation */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-8">
+        <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl border border-white/30 p-2 mb-12">
           <div className="flex">
             <button
               onClick={() => setActiveTab('drive')}
-              className={`flex-1 flex items-center justify-center space-x-2 py-4 px-6 text-sm font-medium transition-colors ${
+              className={`flex-1 flex items-center justify-center space-x-3 py-4 px-8 text-sm font-semibold transition-all duration-300 rounded-xl ${
                 activeTab === 'drive'
-                  ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-700'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg transform scale-105'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
               }`}
             >
               <FolderIcon className="w-5 h-5" />
@@ -227,10 +237,10 @@ function App() {
             </button>
             <button
               onClick={() => setActiveTab('upload')}
-              className={`flex-1 flex items-center justify-center space-x-2 py-4 px-6 text-sm font-medium transition-colors ${
+              className={`flex-1 flex items-center justify-center space-x-3 py-4 px-8 text-sm font-semibold transition-all duration-300 rounded-xl ${
                 activeTab === 'upload'
-                  ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-700'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg transform scale-105'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
               }`}
             >
               <Upload className="w-5 h-5" />
@@ -238,10 +248,10 @@ function App() {
             </button>
             <button
               onClick={() => setActiveTab('text')}
-              className={`flex-1 flex items-center justify-center space-x-2 py-4 px-6 text-sm font-medium transition-colors ${
+              className={`flex-1 flex items-center justify-center space-x-3 py-4 px-8 text-sm font-semibold transition-all duration-300 rounded-xl ${
                 activeTab === 'text'
-                  ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-700'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg transform scale-105'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
               }`}
             >
               <Edit3 className="w-5 h-5" />
@@ -251,20 +261,27 @@ function App() {
         </div>
 
         {/* Content Area */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Left Panel */}
-          <div className="space-y-6">
+          <div className="space-y-8">
             {activeTab === 'drive' && (
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <div className="flex items-center space-x-2 mb-4">
-                  <FolderIcon className="w-6 h-6 text-blue-600" />
-                  <h2 className="text-xl font-semibold text-gray-900">Google Drive</h2>
-                  <Shield className="w-5 h-5 text-green-600" />
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/30 p-8">
+                <div className="flex items-center justify-between mb-8">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center">
+                      <FolderIcon className="w-6 h-6 text-white" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900">Google Drive</h2>
+                  </div>
+                  <div className="flex items-center space-x-2 bg-green-50 px-3 py-2 rounded-full">
+                    <Shield className="w-4 h-4 text-green-600" />
+                    <span className="text-sm font-semibold text-green-700">Secure</span>
+                  </div>
                 </div>
 
                 {/* Folder Selection */}
-                <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                <div className="mb-8">
+                  <label className="block text-lg font-semibold text-gray-900 mb-4">
                     Choose a folder:
                   </label>
                   <select
@@ -275,7 +292,7 @@ function App() {
                       setDocuments([]);
                       setSelectedDocuments([]);
                     }}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    className="w-full px-6 py-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 text-base font-medium bg-white/50 backdrop-blur-sm"
                   >
                     <option value="">Select a folder...</option>
                     {folders.map((folder) => (
@@ -289,28 +306,31 @@ function App() {
                 {/* Documents List */}
                 {selectedFolder && (
                   <div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-3">Documents</h3>
+                    <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                      <FileText className="w-6 h-6 text-blue-600 mr-3" />
+                      Documents
+                    </h3>
                     {loading ? (
-                      <div className="flex items-center justify-center py-8">
-                        <Loader2 className="w-6 h-6 text-blue-600 animate-spin" />
+                      <div className="flex items-center justify-center py-12">
+                        <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
                       </div>
                     ) : documents.length > 0 ? (
-                      <div className="space-y-2 max-h-64 overflow-y-auto">
+                      <div className="space-y-3 max-h-80 overflow-y-auto">
                         {documents.map((doc) => (
-                          <label key={doc.id} className="flex items-center space-x-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer transition-colors">
+                          <label key={doc.id} className="flex items-center space-x-4 p-4 rounded-xl border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50/50 cursor-pointer transition-all duration-300 group">
                             <input
                               type="checkbox"
                               checked={selectedDocuments.some(d => d.id === doc.id)}
                               onChange={() => handleDocumentToggle(doc)}
-                              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                              className="w-5 h-5 text-blue-600 border-gray-300 rounded-lg focus:ring-blue-500 focus:ring-2"
                             />
-                            <FileText className="w-5 h-5 text-gray-500" />
-                            <span className="text-sm text-gray-700">{doc.name}</span>
+                            <FileText className="w-6 h-6 text-gray-500 group-hover:text-blue-600 transition-colors" />
+                            <span className="text-base font-medium text-gray-700 group-hover:text-gray-900 transition-colors">{doc.name}</span>
                           </label>
                         ))}
                       </div>
                     ) : (
-                      <p className="text-gray-500 text-center py-4">No documents found</p>
+                      <p className="text-gray-500 text-center py-8">No documents found</p>
                     )}
                   </div>
                 )}
@@ -320,17 +340,18 @@ function App() {
                   <button
                     onClick={analyzeDocuments}
                     disabled={loading}
-                    className="w-full mt-6 bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full mt-8 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 px-8 rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-purple-700 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 shadow-xl"
                   >
                     {loading ? (
-                      <div className="flex items-center justify-center space-x-2">
-                        <Loader2 className="w-5 h-5 animate-spin" />
+                      <div className="flex items-center justify-center space-x-3">
+                        <Loader2 className="w-6 h-6 animate-spin" />
                         <span>Analyzing...</span>
                       </div>
                     ) : (
-                      <div className="flex items-center justify-center space-x-2">
-                        <Sparkles className="w-5 h-5" />
+                      <div className="flex items-center justify-center space-x-3">
+                        <Sparkles className="w-6 h-6" />
                         <span>Analyze Documents</span>
+                        <ArrowRight className="w-5 h-5" />
                       </div>
                     )}
                   </button>
@@ -343,21 +364,26 @@ function App() {
           </div>
 
           {/* Right Panel - Analysis Results */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center space-x-2 mb-4">
-              <CheckCircle className="w-6 h-6 text-green-600" />
-              <h2 className="text-xl font-semibold text-gray-900">Analysis Results</h2>
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/30 p-8">
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
+                  <CheckCircle className="w-6 h-6 text-white" />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900">Analysis Results</h2>
+              </div>
+              <Star className="w-6 h-6 text-yellow-500" />
             </div>
 
             {error && (
-              <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-                <div className="flex items-center space-x-2">
-                  <AlertCircle className="w-5 h-5 text-red-600" />
-                  <span className="text-red-800">{error}</span>
+              <div className="mb-8 p-6 bg-red-50 border-2 border-red-200 rounded-xl">
+                <div className="flex items-center space-x-3">
+                  <AlertCircle className="w-6 h-6 text-red-600" />
+                  <span className="text-red-800 font-semibold">{error}</span>
                 </div>
                 <button
                   onClick={handleRetry}
-                  className="mt-2 text-sm text-red-600 hover:text-red-800 font-medium"
+                  className="mt-4 text-sm text-red-600 hover:text-red-800 font-semibold underline"
                 >
                   Try again
                 </button>
@@ -365,38 +391,44 @@ function App() {
             )}
 
             {analysisResults.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="flex justify-center space-x-4 mb-4">
-                  <Globe className="w-12 h-12 text-gray-300" />
-                  <FileText className="w-12 h-12 text-gray-300" />
+              <div className="text-center py-16">
+                <div className="flex justify-center space-x-6 mb-8">
+                  <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl flex items-center justify-center">
+                    <Globe className="w-8 h-8 text-blue-600" />
+                  </div>
+                  <div className="w-16 h-16 bg-gradient-to-br from-green-100 to-emerald-100 rounded-2xl flex items-center justify-center">
+                    <FileText className="w-8 h-8 text-green-600" />
+                  </div>
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Ready to Analyze</h3>
-                <p className="text-gray-600">
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">Ready to Analyze</h3>
+                <p className="text-gray-600 text-lg leading-relaxed max-w-md mx-auto">
                   Select documents and click analyze to see detailed results with spelling, grammar, and style suggestions.
                 </p>
               </div>
             ) : (
-              <div className="space-y-6">
+              <div className="space-y-8">
                 {analysisResults.map((result, index) => (
-                  <div key={index} className="border border-gray-200 rounded-lg p-4">
-                    <h3 className="font-medium text-gray-900 mb-3">{result.documentTitle}</h3>
-                    
-                    {/* Language */}
-                    <div className="mb-4">
-                      <span className="text-sm font-medium text-gray-700">Language: </span>
-                      <span className="text-sm text-gray-600">{result.language}</span>
+                  <div key={index} className="border-2 border-gray-200 rounded-xl p-6 bg-white/50 backdrop-blur-sm">
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="text-xl font-bold text-gray-900">{result.documentTitle}</h3>
+                      <span className="px-4 py-2 bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 rounded-full text-sm font-semibold">
+                        {result.language}
+                      </span>
                     </div>
-
+                    
                     {/* Spelling Errors */}
                     {result.spellingErrors.length > 0 && (
-                      <div className="mb-4">
-                        <h4 className="text-sm font-medium text-gray-700 mb-2">Spelling Errors</h4>
-                        <div className="space-y-2">
+                      <div className="mb-6">
+                        <h4 className="text-lg font-semibold text-red-700 mb-4 flex items-center">
+                          <AlertCircle className="w-5 h-5 mr-2" />
+                          Spelling Errors ({result.spellingErrors.length})
+                        </h4>
+                        <div className="space-y-3">
                           {result.spellingErrors.map((error, idx) => (
-                            <div key={idx} className="text-sm">
-                              <span className="text-red-600 line-through">{error.original}</span>
-                              <span className="mx-2">→</span>
-                              <span className="text-green-600 font-medium">{error.corrected}</span>
+                            <div key={idx} className="flex items-center space-x-3 p-4 bg-red-50 rounded-lg border border-red-200">
+                              <span className="text-red-600 font-semibold line-through">{error.original}</span>
+                              <ArrowRight className="w-4 h-4 text-gray-400" />
+                              <span className="text-green-600 font-semibold">{error.corrected}</span>
                             </div>
                           ))}
                         </div>
@@ -405,14 +437,17 @@ function App() {
 
                     {/* Grammar Errors */}
                     {result.grammarErrors.length > 0 && (
-                      <div className="mb-4">
-                        <h4 className="text-sm font-medium text-gray-700 mb-2">Grammar Suggestions</h4>
-                        <div className="space-y-3">
+                      <div className="mb-6">
+                        <h4 className="text-lg font-semibold text-orange-700 mb-4 flex items-center">
+                          <AlertCircle className="w-5 h-5 mr-2" />
+                          Grammar Suggestions ({result.grammarErrors.length})
+                        </h4>
+                        <div className="space-y-4">
                           {result.grammarErrors.map((error, idx) => (
-                            <div key={idx} className="text-sm">
-                              <div className="text-red-600 mb-1">{error.original}</div>
-                              <div className="text-gray-600 mb-1">{error.explanation}</div>
-                              <div className="text-green-600 font-medium">{error.corrected}</div>
+                            <div key={idx} className="p-4 bg-orange-50 rounded-lg border border-orange-200">
+                              <div className="text-gray-700 mb-2 font-semibold">"{error.original}"</div>
+                              <div className="text-orange-600 mb-3 text-sm">💡 {error.explanation}</div>
+                              <div className="text-green-600 font-semibold">✅ "{error.corrected}"</div>
                             </div>
                           ))}
                         </div>
@@ -422,12 +457,15 @@ function App() {
                     {/* Style Suggestions */}
                     {result.styleSuggestions.length > 0 && (
                       <div>
-                        <h4 className="text-sm font-medium text-gray-700 mb-2">Style Suggestions</h4>
-                        <div className="space-y-2">
+                        <h4 className="text-lg font-semibold text-blue-700 mb-4 flex items-center">
+                          <Sparkles className="w-5 h-5 mr-2" />
+                          Style Suggestions ({result.styleSuggestions.length})
+                        </h4>
+                        <div className="space-y-4">
                           {result.styleSuggestions.map((suggestion, idx) => (
-                            <div key={idx} className="text-sm">
-                              <div className="text-gray-600 mb-1">{suggestion.original}</div>
-                              <div className="text-blue-600 font-medium">{suggestion.suggestion}</div>
+                            <div key={idx} className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                              <div className="text-gray-700 mb-2 font-semibold">Original: "{suggestion.original}"</div>
+                              <div className="text-blue-600 font-semibold">💡 Suggestion: "{suggestion.suggestion}"</div>
                             </div>
                           ))}
                         </div>
@@ -442,14 +480,14 @@ function App() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-gray-200 mt-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <footer className="bg-white/80 backdrop-blur-sm border-t border-white/20 mt-20">
+        <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2 text-sm text-gray-600">
-              <Shield className="w-4 h-4" />
-              <span>Secure • Private • Professional</span>
+            <div className="flex items-center space-x-3 text-gray-600">
+              <Shield className="w-5 h-5" />
+              <span className="font-semibold">Secure • Private • Professional</span>
             </div>
-            <div className="text-sm text-gray-500">
+            <div className="text-gray-500 font-medium">
               Powered by AI
             </div>
           </div>
