@@ -10,6 +10,9 @@ const mammoth = require('mammoth');
 const pdfParse = require('pdf-parse');
 require('dotenv').config();
 
+// Backend Version: 2.0 - Demo Data Fallback
+// Deploy: 2024-08-04 16:55:00
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
