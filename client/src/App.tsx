@@ -39,12 +39,12 @@ function App() {
   const [activeTab, setActiveTab] = useState<'google-drive' | 'upload' | 'text'>('google-drive');
   const [folders, setFolders] = useState<Folder[]>([]);
   const [selectedFolder, setSelectedFolder] = useState<Folder | null>(null);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [connectionLoading, setConnectionLoading] = useState(false);
   const [isGoogleDriveAuthorized, setIsGoogleDriveAuthorized] = useState(false);
   const [authLoading, setAuthLoading] = useState(false);
+  const [foldersLoading, setFoldersLoading] = useState(false);
 
   const API_BASE_URL = process.env.REACT_APP_API_URL || '';
 
@@ -82,32 +82,45 @@ function App() {
 
   const authorizeGoogleDrive = async () => {
     setAuthLoading(true);
+    setError(null);
+    
     try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/google`);
+      // First check if OAuth is configured by trying to get folders
+      const foldersResponse = await fetch(`${API_BASE_URL}/api/folders`);
       
-      if (!response.ok) {
-        const errorData = await response.json();
-        if (errorData.error === 'Google OAuth not configured') {
-          setError('Google Drive authorization is not configured on the server. Please contact the administrator.');
+      if (foldersResponse.ok) {
+        // If folders endpoint works, OAuth might be configured
+        const foldersData = await foldersResponse.json();
+        if (foldersData.error && foldersData.error.includes('authorization required')) {
+          // OAuth is configured but user needs to authorize
+          const authResponse = await fetch(`${API_BASE_URL}/api/auth/google`);
+          
+          if (!authResponse.ok) {
+            const errorData = await authResponse.json();
+            if (errorData.error === 'Google OAuth not configured') {
+              setError('Google Drive authorization is not configured on the server. Please contact the administrator.');
+            } else {
+              setError('Failed to start Google Drive authorization');
+            }
+            return;
+          }
+          
+          // If response is a redirect, follow it
+          if (authResponse.redirected) {
+            window.location.href = authResponse.url;
+          }
         } else {
-          setError('Failed to start Google Drive authorization');
+          // Folders are available, user is already authorized
+          setIsGoogleDriveAuthorized(true);
+          setFolders(foldersData);
         }
-        return;
-      }
-      
-      // If response is a redirect, follow it
-      if (response.redirected) {
-        window.location.href = response.url;
       } else {
-        // Handle the case where we get a JSON response instead of a redirect
-        const data = await response.json();
-        if (data.error) {
-          setError(data.message || 'Authorization failed');
-        }
+        // Folders endpoint failed, OAuth is not configured
+        setError('Google Drive authorization is not configured on the server. Please contact the administrator.');
       }
     } catch (error) {
       console.error('Authorization error:', error);
-      setError('Failed to connect to authorization service');
+      setError('Failed to connect to authorization service. Please try demo mode.');
     } finally {
       setAuthLoading(false);
     }
@@ -115,7 +128,7 @@ function App() {
 
   const fetchFolders = useCallback(async () => {
     try {
-      setLoading(true);
+      setFoldersLoading(true);
       setError(null);
       const response = await axios.get(`${API_BASE_URL}/api/folders`);
       setFolders(response.data);
@@ -127,7 +140,7 @@ function App() {
         setError('Failed to fetch folders. Please try again.');
       }
     } finally {
-      setLoading(false);
+      setFoldersLoading(false);
     }
   }, [API_BASE_URL]);
 
@@ -251,24 +264,41 @@ function App() {
             {activeTab === 'google-drive' && (
               <div className="space-y-6">
                 {!isGoogleDriveAuthorized ? (
-                  <div className="text-center space-y-4">
+                  <div className="text-center space-y-6">
                     <div className="flex justify-center">
-                      <div className="p-4 bg-gradient-to-br from-blue-500/20 to-purple-600/20 rounded-full">
-                        <Lock className="w-12 h-12 text-blue-400" />
+                      <div className="p-6 bg-gradient-to-br from-purple-500/20 to-pink-600/20 rounded-full">
+                        <Lock className="w-16 h-16 text-purple-400" />
                       </div>
                     </div>
-                    <h3 className="text-2xl font-bold text-white">Authorize Google Drive</h3>
-                    <p className="text-gray-300 max-w-md mx-auto">
+                    <h3 className="text-3xl font-bold text-white">Authorize Google Drive</h3>
+                    <p className="text-gray-300 max-w-md mx-auto text-lg">
                       Connect your Google Drive to access and analyze your documents securely.
                     </p>
                     
                     {error && (
-                      <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-4">
-                        <p className="text-red-300 text-sm">{error}</p>
+                      <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-6 max-w-md mx-auto">
+                        <p className="text-red-300 text-sm mb-3">{error}</p>
                         {error.includes('not configured') && (
-                          <p className="text-gray-400 text-xs mt-2">
-                            Demo mode: You can still test the app with sample data below.
-                          </p>
+                          <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 mt-4">
+                            <h4 className="text-blue-300 font-semibold mb-2">Demo Mode Available</h4>
+                            <p className="text-gray-300 text-sm mb-3">
+                              While Google Drive authorization is being set up, you can test the app with demo data.
+                            </p>
+                            <button
+                              onClick={() => {
+                                setError(null);
+                                setIsGoogleDriveAuthorized(true);
+                                setFolders([
+                                  { id: 'demo-folder-1', name: 'Demo Documents', parents: [] },
+                                  { id: 'demo-folder-2', name: 'Work Projects', parents: [] },
+                                  { id: 'demo-folder-3', name: 'Personal Files', parents: [] }
+                                ]);
+                              }}
+                              className="btn-secondary px-6 py-3 text-sm font-medium"
+                            >
+                              Try Demo Mode
+                            </button>
+                          </div>
                         )}
                       </div>
                     )}
@@ -276,74 +306,55 @@ function App() {
                     <button
                       onClick={authorizeGoogleDrive}
                       disabled={authLoading}
-                      className="btn-gradient px-8 py-3 rounded-lg font-semibold text-white transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="btn-gradient px-10 py-4 rounded-xl font-semibold text-white transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed text-lg"
                     >
                       {authLoading ? (
-                        <div className="flex items-center space-x-2">
-                          <Loader2 className="w-5 h-5 animate-spin" />
+                        <div className="flex items-center space-x-3">
+                          <Loader2 className="w-6 h-6 animate-spin" />
                           <span>Authorizing...</span>
                         </div>
                       ) : (
-                        <div className="flex items-center space-x-2">
-                          <Key className="w-5 h-5" />
+                        <div className="flex items-center space-x-3">
+                          <Key className="w-6 h-6" />
                           <span>Authorize Google Drive</span>
                         </div>
                       )}
                     </button>
-                    
-                    {/* Demo Mode Fallback */}
-                    {error && error.includes('not configured') && (
-                      <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-                        <h4 className="text-blue-300 font-semibold mb-2">Demo Mode Available</h4>
-                        <p className="text-gray-300 text-sm mb-3">
-                          While Google Drive authorization is being set up, you can test the app with demo data.
-                        </p>
-                        <button
-                          onClick={() => {
-                            setError(null);
-                            setIsGoogleDriveAuthorized(true);
-                          }}
-                          className="btn-secondary px-4 py-2 text-sm"
-                        >
-                          Try Demo Mode
-                        </button>
-                      </div>
-                    )}
                   </div>
                 ) : (
-                  <div className="space-y-4">
-                    <div className="flex items-center space-x-3 p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
-                      <Unlock className="w-6 h-6 text-green-400" />
+                  <div className="space-y-6">
+                    <div className="flex items-center space-x-4 p-6 bg-green-500/10 border border-green-500/20 rounded-xl">
+                      <Unlock className="w-8 h-8 text-green-400" />
                       <div>
-                        <h3 className="text-green-300 font-semibold">Google Drive Authorized</h3>
+                        <h3 className="text-green-300 font-semibold text-xl">Google Drive Authorized</h3>
                         <p className="text-gray-400 text-sm">Your data is secure and private</p>
                       </div>
                     </div>
                     
-                    {loading ? (
-                      <div className="flex justify-center py-8">
-                        <Loader2 className="w-8 h-8 animate-spin text-blue-400" />
+                    {foldersLoading ? (
+                      <div className="flex justify-center py-12">
+                        <Loader2 className="w-10 h-10 animate-spin text-purple-400" />
                       </div>
                     ) : folders.length > 0 ? (
-                      <div className="space-y-3">
-                        <h3 className="text-lg font-semibold text-white">Select a Folder</h3>
-                        <div className="grid gap-3">
+                      <div className="space-y-4">
+                        <h3 className="text-xl font-semibold text-white">Select a Folder</h3>
+                        <div className="grid gap-4">
                           {folders.map((folder) => (
                             <button
                               key={folder.id}
                               onClick={() => handleFolderSelect(folder)}
-                              className="flex items-center space-x-3 p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-all duration-300 hover:scale-105"
+                              className="flex items-center space-x-4 p-6 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all duration-300 hover:scale-105"
                             >
-                              <FolderIcon className="w-5 h-5 text-blue-400" />
-                              <span className="text-white">{folder.name}</span>
+                              <FolderIcon className="w-6 h-6 text-purple-400" />
+                              <span className="text-white text-lg">{folder.name}</span>
                             </button>
                           ))}
                         </div>
                       </div>
                     ) : (
-                      <div className="text-center py-8">
-                        <FolderIcon className="w-12 h-12 text-gray-500 mx-auto mb-3" />
-                        <p className="text-gray-400">No folders found</p>
+                      <div className="text-center py-12">
+                        <FolderIcon className="w-16 h-16 text-gray-500 mx-auto mb-4" />
+                        <p className="text-gray-400 text-lg">No folders found</p>
                       </div>
                     )}
                   </div>
