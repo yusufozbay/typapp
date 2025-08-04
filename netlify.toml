@@ -1,6 +1,6 @@
 [build]
   # Build command for the frontend
-  command = "cd client && npm install --legacy-peer-deps && npm run build"
+  command = "cd client && chmod +x build.sh && ./build.sh"
   
   # Publish directory (where the built files are located)
   publish = "client/build"
@@ -8,6 +8,7 @@
 [build.environment]
   # Set Node.js version
   NODE_VERSION = "18"
+  NPM_FLAGS = "--legacy-peer-deps --force"
 
 # Redirect all API calls to the backend
 # Update this URL with your actual backend URL
