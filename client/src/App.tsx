@@ -14,17 +14,19 @@ import {
   Wifi,
   WifiOff,
   Star,
-  ArrowRight
+  ArrowRight,
+  Lock,
+  Unlock,
+  Key,
+  UserCheck
 } from 'lucide-react';
 import DemoAnalyzer from './components/DemoAnalyzer';
 import FileUploader from './components/FileUploader';
 import './App.css';
 
-// FORCE NEW UI - AGGRESSIVE CACHE BUST
-// Version: 5.0 - FORCE DEPLOY
-// Build: 2024-08-04 17:15:00
-// Cache ID: FORCE-NEW-UI-20240804-171500
-// UI Style: Sleek Modern Glassmorphism
+// Sleek Modern UI - Google Drive Auth Flow
+// Version: 6.0 - Auth-First Design
+// Build: 2024-08-04 17:30:00
 
 interface Folder {
   id: string;
@@ -65,6 +67,8 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [connectionLoading, setConnectionLoading] = useState(false);
+  const [isGoogleDriveAuthorized, setIsGoogleDriveAuthorized] = useState(false);
+  const [authLoading, setAuthLoading] = useState(false);
 
   const API_BASE_URL = process.env.REACT_APP_API_URL || '';
 
@@ -82,7 +86,42 @@ function App() {
     }
   }, [API_BASE_URL]);
 
+  const checkGoogleDriveAuth = useCallback(async () => {
+    try {
+      setAuthLoading(true);
+      const response = await axios.get(`${API_BASE_URL}/api/folders`);
+      // If we get folders, user is authorized
+      setIsGoogleDriveAuthorized(response.data.length > 0 || response.data.error === undefined);
+      setFolders(response.data);
+    } catch (err: any) {
+      if (err.response?.status === 401) {
+        setIsGoogleDriveAuthorized(false);
+      } else {
+        setIsGoogleDriveAuthorized(false);
+      }
+    } finally {
+      setAuthLoading(false);
+    }
+  }, [API_BASE_URL]);
+
+  const authorizeGoogleDrive = async () => {
+    try {
+      setAuthLoading(true);
+      setError(null);
+      // Redirect to Google OAuth
+      window.location.href = `${API_BASE_URL}/api/auth/google`;
+    } catch (err) {
+      setError('Failed to initiate Google Drive authorization.');
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
   const fetchFolders = useCallback(async () => {
+    if (!isGoogleDriveAuthorized) {
+      return;
+    }
+    
     try {
       setLoading(true);
       setError(null);
@@ -93,7 +132,8 @@ function App() {
       }
     } catch (err: any) {
       if (err.response?.status === 401) {
-        setError('Google Drive authentication required. Please sign in to your Google account.');
+        setIsGoogleDriveAuthorized(false);
+        setError('Google Drive authorization required. Please authorize access.');
       } else if (err.response?.status === 403) {
         setError('Access denied. Please check your Google Drive permissions.');
       } else if (err.response?.status === 404) {
@@ -104,7 +144,7 @@ function App() {
     } finally {
       setLoading(false);
     }
-  }, [API_BASE_URL]);
+  }, [API_BASE_URL, isGoogleDriveAuthorized]);
 
   const fetchDocuments = useCallback(async (folderId: string) => {
     try {
@@ -167,17 +207,25 @@ function App() {
   }, [checkConnection]);
 
   useEffect(() => {
+    if (isConnected) {
+      checkGoogleDriveAuth();
+    }
+  }, [isConnected, checkGoogleDriveAuth]);
+
+  useEffect(() => {
     if (selectedFolder) {
       fetchDocuments(selectedFolder.id);
     }
   }, [selectedFolder, fetchDocuments]);
 
   useEffect(() => {
-    fetchFolders();
-  }, [fetchFolders]);
+    if (isGoogleDriveAuthorized) {
+      fetchFolders();
+    }
+  }, [isGoogleDriveAuthorized, fetchFolders]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 force-new-ui-v5">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 force-new-ui-v6">
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-sm border-b border-white/20 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-8">
@@ -280,82 +328,132 @@ function App() {
                   </div>
                 </div>
 
-                {/* Folder Selection */}
-                <div className="mb-8">
-                  <label className="block text-lg font-semibold text-gray-900 mb-4">
-                    Choose a folder:
-                  </label>
-                  <select
-                    value={selectedFolder?.id || ''}
-                    onChange={(e) => {
-                      const folder = folders.find(f => f.id === e.target.value);
-                      setSelectedFolder(folder || null);
-                      setDocuments([]);
-                      setSelectedDocuments([]);
-                    }}
-                    className="w-full px-6 py-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 text-base font-medium bg-white/50 backdrop-blur-sm"
-                  >
-                    <option value="">Select a folder...</option>
-                    {folders.map((folder) => (
-                      <option key={folder.id} value={folder.id}>
-                        {folder.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Documents List */}
-                {selectedFolder && (
-                  <div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
-                      <FileText className="w-6 h-6 text-blue-600 mr-3" />
-                      Documents
-                    </h3>
-                    {loading ? (
-                      <div className="flex items-center justify-center py-12">
-                        <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
-                      </div>
-                    ) : documents.length > 0 ? (
-                      <div className="space-y-3 max-h-80 overflow-y-auto">
-                        {documents.map((doc) => (
-                          <label key={doc.id} className="flex items-center space-x-4 p-4 rounded-xl border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50/50 cursor-pointer transition-all duration-300 group">
-                            <input
-                              type="checkbox"
-                              checked={selectedDocuments.some(d => d.id === doc.id)}
-                              onChange={() => handleDocumentToggle(doc)}
-                              className="w-5 h-5 text-blue-600 border-gray-300 rounded-lg focus:ring-blue-500 focus:ring-2"
-                            />
-                            <FileText className="w-6 h-6 text-gray-500 group-hover:text-blue-600 transition-colors" />
-                            <span className="text-base font-medium text-gray-700 group-hover:text-gray-900 transition-colors">{doc.name}</span>
-                          </label>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-gray-500 text-center py-8">No documents found</p>
-                    )}
+                {/* Google Drive Authorization Status */}
+                {!isGoogleDriveAuthorized ? (
+                  <div className="text-center py-12">
+                    <div className="w-20 h-20 bg-gradient-to-br from-orange-100 to-red-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                      <Lock className="w-10 h-10 text-orange-600" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-4">Authorize Google Drive</h3>
+                    <p className="text-gray-600 mb-8 max-w-md mx-auto leading-relaxed">
+                      To access your Google Drive folders and documents, you need to authorize Typapp to access your Google account.
+                    </p>
+                    <button
+                      onClick={authorizeGoogleDrive}
+                      disabled={authLoading}
+                      className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 px-8 rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-purple-700 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 shadow-xl"
+                    >
+                      {authLoading ? (
+                        <div className="flex items-center justify-center space-x-3">
+                          <Loader2 className="w-6 h-6 animate-spin" />
+                          <span>Authorizing...</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-center space-x-3">
+                          <Key className="w-6 h-6" />
+                          <span>Authorize Google Drive</span>
+                          <ArrowRight className="w-5 h-5" />
+                        </div>
+                      )}
+                    </button>
+                    <div className="mt-6 flex items-center justify-center space-x-2 text-sm text-gray-500">
+                      <Shield className="w-4 h-4" />
+                      <span>Your data is secure and private</span>
+                    </div>
                   </div>
-                )}
-
-                {/* Analyze Button */}
-                {selectedDocuments.length > 0 && (
-                  <button
-                    onClick={analyzeDocuments}
-                    disabled={loading}
-                    className="w-full mt-8 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 px-8 rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-purple-700 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 shadow-xl"
-                  >
-                    {loading ? (
-                      <div className="flex items-center justify-center space-x-3">
-                        <Loader2 className="w-6 h-6 animate-spin" />
-                        <span>Analyzing...</span>
+                ) : (
+                  <>
+                    {/* Authorization Success */}
+                    <div className="mb-8 p-6 bg-green-50 border-2 border-green-200 rounded-xl">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
+                          <Unlock className="w-6 h-6 text-white" />
+                        </div>
+                        <div>
+                          <h4 className="text-lg font-semibold text-green-800">Google Drive Authorized</h4>
+                          <p className="text-green-600 text-sm">You can now access your folders and documents</p>
+                        </div>
                       </div>
-                    ) : (
-                      <div className="flex items-center justify-center space-x-3">
-                        <Sparkles className="w-6 h-6" />
-                        <span>Analyze Documents</span>
-                        <ArrowRight className="w-5 h-5" />
+                    </div>
+
+                    {/* Folder Selection */}
+                    <div className="mb-8">
+                      <label className="block text-lg font-semibold text-gray-900 mb-4">
+                        Choose a folder:
+                      </label>
+                      <select
+                        value={selectedFolder?.id || ''}
+                        onChange={(e) => {
+                          const folder = folders.find(f => f.id === e.target.value);
+                          setSelectedFolder(folder || null);
+                          setDocuments([]);
+                          setSelectedDocuments([]);
+                        }}
+                        className="w-full px-6 py-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 text-base font-medium bg-white/50 backdrop-blur-sm"
+                      >
+                        <option value="">Select a folder...</option>
+                        {folders.map((folder) => (
+                          <option key={folder.id} value={folder.id}>
+                            {folder.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Documents List */}
+                    {selectedFolder && (
+                      <div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                          <FileText className="w-6 h-6 text-blue-600 mr-3" />
+                          Documents
+                        </h3>
+                        {loading ? (
+                          <div className="flex items-center justify-center py-12">
+                            <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+                          </div>
+                        ) : documents.length > 0 ? (
+                          <div className="space-y-3 max-h-80 overflow-y-auto">
+                            {documents.map((doc) => (
+                              <label key={doc.id} className="flex items-center space-x-4 p-4 rounded-xl border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50/50 cursor-pointer transition-all duration-300 group">
+                                <input
+                                  type="checkbox"
+                                  checked={selectedDocuments.some(d => d.id === doc.id)}
+                                  onChange={() => handleDocumentToggle(doc)}
+                                  className="w-5 h-5 text-blue-600 border-gray-300 rounded-lg focus:ring-blue-500 focus:ring-2"
+                                />
+                                <FileText className="w-6 h-6 text-gray-500 group-hover:text-blue-600 transition-colors" />
+                                <span className="text-base font-medium text-gray-700 group-hover:text-gray-900 transition-colors">{doc.name}</span>
+                              </label>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-gray-500 text-center py-8">No documents found</p>
+                        )}
                       </div>
                     )}
-                  </button>
+
+                    {/* Analyze Button */}
+                    {selectedDocuments.length > 0 && (
+                      <button
+                        onClick={analyzeDocuments}
+                        disabled={loading}
+                        className="w-full mt-8 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 px-8 rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-purple-700 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 shadow-xl"
+                      >
+                        {loading ? (
+                          <div className="flex items-center justify-center space-x-3">
+                            <Loader2 className="w-6 h-6 animate-spin" />
+                            <span>Analyzing...</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-center space-x-3">
+                            <Sparkles className="w-6 h-6" />
+                            <span>Analyze Documents</span>
+                            <ArrowRight className="w-5 h-5" />
+                          </div>
+                        )}
+                      </button>
+                    )}
+                  </>
                 )}
               </div>
             )}

@@ -10,8 +10,8 @@ const mammoth = require('mammoth');
 const pdfParse = require('pdf-parse');
 require('dotenv').config();
 
-// Backend Version: 2.0 - Demo Data Fallback
-// Deploy: 2024-08-04 16:55:00
+// Backend Version: 3.0 - Google OAuth Support
+// Deploy: 2024-08-04 17:30:00
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -78,42 +78,68 @@ const upload = multer({
   }
 });
 
+// Google OAuth configuration
+const oauth2Client = new google.auth.OAuth2(
+  process.env.GOOGLE_CLIENT_ID,
+  process.env.GOOGLE_CLIENT_SECRET,
+  process.env.GOOGLE_REDIRECT_URI || 'https://typapp.netlify.app/auth/callback'
+);
+
 // Google Drive API setup
 const drive = google.drive('v3');
 const docs = google.docs('v1');
-
-// Initialize Google Auth
-const auth = new google.auth.GoogleAuth({
-  keyFile: process.env.GOOGLE_APPLICATION_CREDENTIALS,
-  scopes: [
-    'https://www.googleapis.com/auth/drive.readonly',
-    'https://www.googleapis.com/auth/documents.readonly'
-  ]
-});
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Typapp server is running' });
 });
 
+// Google OAuth endpoints
+app.get('/api/auth/google', (req, res) => {
+  const scopes = [
+    'https://www.googleapis.com/auth/drive.readonly',
+    'https://www.googleapis.com/auth/documents.readonly'
+  ];
+  
+  const authUrl = oauth2Client.generateAuthUrl({
+    access_type: 'offline',
+    scope: scopes,
+    prompt: 'consent'
+  });
+  
+  res.redirect(authUrl);
+});
+
+app.get('/api/auth/callback', async (req, res) => {
+  try {
+    const { code } = req.query;
+    
+    if (!code) {
+      return res.redirect('https://typapp.netlify.app?error=no_code');
+    }
+    
+    const { tokens } = await oauth2Client.getToken(code);
+    oauth2Client.setCredentials(tokens);
+    
+    // Store tokens (in production, use a proper session/database)
+    // For now, we'll redirect back to the app
+    res.redirect('https://typapp.netlify.app?auth=success');
+  } catch (error) {
+    console.error('OAuth callback error:', error);
+    res.redirect('https://typapp.netlify.app?error=auth_failed');
+  }
+});
+
 // Get Google Drive folders
 app.get('/api/folders', async (req, res) => {
   try {
-    // Check if Google credentials are available
-    if (!process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-      console.log('Google credentials not configured, returning demo data');
-      // Return demo folders for testing
-      return res.json([
-        { id: 'demo-folder-1', name: 'Demo Documents', parents: [] },
-        { id: 'demo-folder-2', name: 'Work Projects', parents: [] },
-        { id: 'demo-folder-3', name: 'Personal Files', parents: [] }
-      ]);
+    // Check if we have valid credentials
+    if (!oauth2Client.credentials || !oauth2Client.credentials.access_token) {
+      return res.status(401).json({ error: 'Google Drive authorization required' });
     }
-
-    const authClient = await auth.getClient();
     
     const response = await drive.files.list({
-      auth: authClient,
+      auth: oauth2Client,
       q: "mimeType='application/vnd.google-apps.folder' and trashed=false",
       fields: 'files(id, name, parents)',
       orderBy: 'name'
@@ -122,6 +148,10 @@ app.get('/api/folders', async (req, res) => {
     res.json(response.data.files);
   } catch (error) {
     console.error('Error fetching folders:', error);
+    
+    if (error.code === 401) {
+      return res.status(401).json({ error: 'Google Drive authorization required' });
+    }
     
     // Return demo data if Google API fails
     if (error.code === 'ENOENT' || error.message.includes('credentials')) {
