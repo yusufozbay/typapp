@@ -59,13 +59,21 @@ function App() {
     try {
       setAuthLoading(true);
       const response = await axios.get(`${API_BASE_URL}/api/folders`);
-      setIsGoogleDriveAuthorized(response.data.length > 0 || response.data.error === undefined);
-      setFolders(response.data);
+      // Only consider authorized if we get actual folders, not just an empty array
+      const hasFolders = Array.isArray(response.data) && response.data.length > 0;
+      setIsGoogleDriveAuthorized(hasFolders);
+      if (hasFolders) {
+        setFolders(response.data);
+      } else {
+        setFolders([]);
+      }
     } catch (err: any) {
       if (err.response?.status === 401) {
         setIsGoogleDriveAuthorized(false);
+        setFolders([]);
       } else {
         setIsGoogleDriveAuthorized(false);
+        setFolders([]);
       }
     } finally {
       setAuthLoading(false);
@@ -77,10 +85,18 @@ function App() {
     setError(null);
     
     try {
+      // First check if the backend is available
+      if (!API_BASE_URL) {
+        setError('Backend URL not configured. Please set REACT_APP_API_URL environment variable.');
+        return;
+      }
+
       const foldersResponse = await fetch(`${API_BASE_URL}/api/folders`);
       
       if (foldersResponse.ok) {
         const foldersData = await foldersResponse.json();
+        
+        // Check if we need to authorize
         if (foldersData.error && foldersData.error.includes('authorization required')) {
           const authResponse = await fetch(`${API_BASE_URL}/api/auth/google`);
           
@@ -94,19 +110,22 @@ function App() {
             return;
           }
           
+          // Redirect to Google OAuth
           if (authResponse.redirected) {
             window.location.href = authResponse.url;
           }
         } else {
-          setIsGoogleDriveAuthorized(true);
-          setFolders(foldersData);
+          // We have folders, user is authorized
+          const hasFolders = Array.isArray(foldersData) && foldersData.length > 0;
+          setIsGoogleDriveAuthorized(hasFolders);
+          setFolders(hasFolders ? foldersData : []);
         }
       } else {
-        setError('Google Drive authorization is not configured on the server. Please contact the administrator.');
+        setError('Backend server is not responding. Please check your connection and try again.');
       }
     } catch (error) {
       console.error('Authorization error:', error);
-      setError('Failed to connect to authorization service. Please try demo mode.');
+      setError('Failed to connect to authorization service. Please check your internet connection.');
     } finally {
       setAuthLoading(false);
     }
@@ -266,7 +285,9 @@ function App() {
                     </div>
                     
                     {foldersLoading ? (
-                      <Loader />
+                      <div className="flex justify-center py-8">
+                        <Loader />
+                      </div>
                     ) : folders.length > 0 ? (
                       <div className="space-y-4">
                         <h3 className="text-lg font-semibold text-gray-900">Select a Folder</h3>
@@ -283,9 +304,10 @@ function App() {
                         </div>
                       </div>
                     ) : (
-                      <div className="text-center py-12">
+                      <div className="text-center py-8">
                         <FolderIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                        <p className="text-gray-500">No folders found</p>
+                        <p className="text-gray-500 mb-2">No folders found</p>
+                        <p className="text-sm text-gray-400">Make sure your Google Drive has shared folders</p>
                       </div>
                     )}
                   </div>
