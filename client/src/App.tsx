@@ -56,7 +56,7 @@ interface AnalysisResult {
 }
 
 function App() {
-  const [activeTab, setActiveTab] = useState<'drive' | 'upload' | 'text'>('drive');
+  const [activeTab, setActiveTab] = useState<'google-drive' | 'upload' | 'text'>('google-drive');
   const [folders, setFolders] = useState<Folder[]>([]);
   const [selectedFolder, setSelectedFolder] = useState<Folder | null>(null);
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -203,7 +203,7 @@ function App() {
 
   const handleDocumentToggle = useCallback((document: Document) => {
     setSelectedDocuments(prev => {
-      const isSelected = prev.find(d => d.id === document.id);
+      const isSelected = prev.some(d => d.id === document.id);
       if (isSelected) {
         return prev.filter(d => d.id !== document.id);
       } else {
@@ -211,6 +211,13 @@ function App() {
       }
     });
   }, []);
+
+  const handleFolderSelect = useCallback((folder: Folder) => {
+    setSelectedFolder(folder);
+    setDocuments([]);
+    setSelectedDocuments([]);
+    fetchDocuments(folder.id);
+  }, [fetchDocuments]);
 
   const handleRetry = () => {
     setError(null);
@@ -293,9 +300,9 @@ function App() {
         <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl border border-white/30 p-2 mb-12">
           <div className="flex">
             <button
-              onClick={() => setActiveTab('drive')}
+              onClick={() => setActiveTab('google-drive')}
               className={`flex-1 flex items-center justify-center space-x-3 py-4 px-8 text-sm font-semibold transition-all duration-300 rounded-xl ${
-                activeTab === 'drive'
+                activeTab === 'google-drive'
                   ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg transform scale-105'
                   : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
               }`}
