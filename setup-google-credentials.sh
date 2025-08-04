@@ -1,0 +1,41 @@
+#!/bin/bash
+
+echo "🔑 Google Application Credentials Setup"
+echo "======================================"
+echo ""
+
+echo "📋 Follow these steps to get your credentials:"
+echo ""
+echo "1. Go to: https://console.cloud.google.com"
+echo "2. Create a new project or select existing"
+echo "3. Enable APIs:"
+echo "   - Google Drive API"
+echo "   - Google Docs API"
+echo "4. Create Service Account:"
+echo "   - Go to Credentials"
+echo "   - Create Service Account"
+echo "   - Name: typapp-service"
+echo "   - Role: Editor"
+echo "5. Create Key:"
+echo "   - JSON format"
+echo "   - Download the file"
+echo ""
+
+echo "📁 For local development:"
+echo "1. Place the JSON file in: server/service-account-key.json"
+echo "2. Add to .env: GOOGLE_APPLICATION_CREDENTIALS=./server/service-account-key.json"
+echo ""
+
+echo "🌐 For production deployment:"
+echo "1. Copy the entire JSON content"
+echo "2. Add as environment variable: GOOGLE_APPLICATION_CREDENTIALS"
+echo "3. Paste the JSON content as the value"
+echo ""
+
+echo "🔒 Security Notes:"
+echo "- Never commit the JSON file to Git"
+echo "- Use environment variables in production"
+echo "- Keep your private key secure"
+echo ""
+
+echo "✅ Setup complete when you have the JSON content!" 
