@@ -20,9 +20,8 @@ import DemoAnalyzer from './components/DemoAnalyzer';
 import FileUploader from './components/FileUploader';
 import './App.css';
 
-// Force redeploy - 2024-08-04 16:30:00
-// UI Version: 2.0 - Modern Glassmorphism Design
-// Cache bust: v2.0.1
+// Clean UI Design - Professional & Modern
+// Version: 3.0 - Clean Design
 
 interface Folder {
   id: string;
@@ -101,10 +100,11 @@ function App() {
         setError('Google Drive authentication required. Please sign in to your Google account.');
       } else if (err.response?.status === 403) {
         setError('Access denied. Please check your Google Drive permissions.');
+      } else if (err.response?.status === 404) {
+        setError('Google Drive service not found. Please try again later.');
       } else {
-        setError('Failed to fetch folders. Please check your Google Drive connection.');
+        setError('Failed to fetch folders. Please try again.');
       }
-      setFolders([]);
     } finally {
       setLoading(false);
     }
@@ -114,49 +114,17 @@ function App() {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.get(`${API_BASE_URL}/api/folder/${folderId}/documents`);
+      const response = await axios.get(`${API_BASE_URL}/api/documents/${folderId}`);
       setDocuments(response.data);
       if (response.data.length === 0) {
         setError('No documents found in this folder.');
       }
     } catch (err: any) {
-      if (err.response?.status === 404) {
-        setError('Folder not found or access denied.');
-      } else {
-        setError('Failed to fetch documents from the selected folder.');
-      }
-      setDocuments([]);
+      setError('Failed to fetch documents. Please try again.');
     } finally {
       setLoading(false);
     }
   }, [API_BASE_URL]);
-
-  useEffect(() => {
-    checkConnection();
-  }, [checkConnection]);
-
-  useEffect(() => {
-    if (isConnected) {
-      fetchFolders();
-    }
-  }, [isConnected, fetchFolders]);
-
-  useEffect(() => {
-    if (selectedFolder) {
-      fetchDocuments(selectedFolder.id);
-    }
-  }, [selectedFolder, fetchDocuments]);
-
-  const handleDocumentToggle = useCallback((document: Document) => {
-    setSelectedDocuments(prev => {
-      const isSelected = prev.find(doc => doc.id === document.id);
-      if (isSelected) {
-        return prev.filter(doc => doc.id !== document.id);
-      } else {
-        return [...prev, document];
-      }
-    });
-  }, []);
 
   const analyzeDocuments = useCallback(async () => {
     if (selectedDocuments.length === 0) {
@@ -167,320 +135,275 @@ function App() {
     try {
       setLoading(true);
       setError(null);
-
-      // Fetch content for all selected documents
-      const documentContents: DocumentContent[] = [];
-      for (const doc of selectedDocuments) {
-        const response = await axios.get(`${API_BASE_URL}/api/document/${doc.id}`);
-        documentContents.push(response.data);
-      }
-
-      // Analyze documents
       const response = await axios.post(`${API_BASE_URL}/api/analyze`, {
-        documents: documentContents
+        documents: selectedDocuments
       });
-
-      setAnalysisResults(response.data.results);
-    } catch (err) {
+      setAnalysisResults(response.data);
+    } catch (err: any) {
       setError('Failed to analyze documents. Please try again.');
     } finally {
       setLoading(false);
     }
   }, [selectedDocuments, API_BASE_URL]);
 
+  const handleDocumentToggle = useCallback((document: Document) => {
+    setSelectedDocuments(prev => {
+      const isSelected = prev.find(d => d.id === document.id);
+      if (isSelected) {
+        return prev.filter(d => d.id !== document.id);
+      } else {
+        return [...prev, document];
+      }
+    });
+  }, []);
+
   const handleRetry = () => {
-    if (activeTab === 'drive') {
+    setError(null);
+    if (selectedFolder) {
+      fetchDocuments(selectedFolder.id);
+    } else {
       fetchFolders();
     }
   };
 
+  useEffect(() => {
+    checkConnection();
+  }, [checkConnection]);
+
+  useEffect(() => {
+    if (selectedFolder) {
+      fetchDocuments(selectedFolder.id);
+    }
+  }, [selectedFolder, fetchDocuments]);
+
+  useEffect(() => {
+    fetchFolders();
+  }, [fetchFolders]);
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 relative overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
-        <div className="absolute top-40 left-40 w-80 h-80 bg-pink-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000"></div>
-      </div>
-
-      <div className="relative z-10 container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl shadow-2xl mb-8">
-            <Sparkles className="text-white" size={40} />
-          </div>
-          <h1 className="text-6xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-6">
-            Typapp
-          </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Professional document analysis and content editing powered by AI
-          </p>
-        </div>
-
-        {/* Connection Status */}
-        <div className="flex justify-center mb-8">
-          <div className={`inline-flex items-center px-6 py-3 rounded-full text-sm font-semibold shadow-lg ${
-            isConnected 
-              ? 'bg-green-100 text-green-800 border-2 border-green-200' 
-              : 'bg-red-100 text-red-800 border-2 border-red-200'
-          }`}>
-            {connectionLoading ? (
-              <Loader2 className="animate-spin mr-3" size={18} />
-            ) : isConnected ? (
-              <Wifi className="mr-3" size={18} />
-            ) : (
-              <WifiOff className="mr-3" size={18} />
-            )}
-            {connectionLoading ? 'Checking connection...' : isConnected ? 'Connected' : 'Disconnected'}
-          </div>
-        </div>
-
-        {/* Error Display */}
-        {error && (
-          <div className="max-w-4xl mx-auto mb-8">
-            <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-8 shadow-xl backdrop-blur-sm">
-              <div className="flex items-start">
-                <AlertCircle className="text-red-500 mr-4 mt-1" size={24} />
-                <div className="flex-1">
-                  <h3 className="text-red-800 font-bold text-lg mb-3">Connection Issue</h3>
-                  <p className="text-red-700 mb-6 text-base">{error}</p>
-                  <div className="flex gap-4">
-                    <button
-                      onClick={handleRetry}
-                      className="inline-flex items-center px-6 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all duration-200 font-semibold shadow-lg transform hover:scale-105"
-                    >
-                      <RefreshCw className="mr-2" size={18} />
-                      Retry
-                    </button>
-                    <button
-                      onClick={() => setError(null)}
-                      className="px-6 py-3 text-red-600 hover:text-red-700 transition-colors font-semibold"
-                    >
-                      Dismiss
-                    </button>
-                  </div>
-                </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                <Sparkles className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Typapp</h1>
+                <p className="text-gray-600">Professional document analysis powered by AI</p>
               </div>
             </div>
-          </div>
-        )}
-
-        {/* Tab Navigation */}
-        <div className="flex justify-center mb-12">
-          <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-2 shadow-2xl border border-white/30">
-            <div className="flex space-x-3">
-              <button
-                onClick={() => setActiveTab('drive')}
-                className={`px-8 py-4 rounded-2xl text-sm font-semibold transition-all duration-300 flex items-center ${
-                  activeTab === 'drive'
-                    ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-xl transform scale-105'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-white/70'
-                }`}
-              >
-                <FolderIcon className="mr-3" size={20} />
-                Google Drive
-              </button>
-              <button
-                onClick={() => setActiveTab('upload')}
-                className={`px-8 py-4 rounded-2xl text-sm font-semibold transition-all duration-300 flex items-center ${
-                  activeTab === 'upload'
-                    ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-xl transform scale-105'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-white/70'
-                }`}
-              >
-                <Upload className="mr-3" size={20} />
-                File Upload
-              </button>
-              <button
-                onClick={() => setActiveTab('text')}
-                className={`px-8 py-4 rounded-2xl text-sm font-semibold transition-all duration-300 flex items-center ${
-                  activeTab === 'text'
-                    ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-xl transform scale-105'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-white/70'
-                }`}
-              >
-                <Edit3 className="mr-3" size={20} />
-                Text Input
-              </button>
+            
+            {/* Connection Status */}
+            <div className="flex items-center space-x-2">
+              {connectionLoading ? (
+                <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
+              ) : isConnected ? (
+                <div className="flex items-center space-x-2 text-green-600">
+                  <Wifi className="w-5 h-5" />
+                  <span className="text-sm font-medium">Connected</span>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-2 text-red-600">
+                  <WifiOff className="w-5 h-5" />
+                  <span className="text-sm font-medium">Disconnected</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
+      </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 max-w-7xl mx-auto">
-          {/* Left Panel - Content Selection */}
-          <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/30 p-10">
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Tab Navigation */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-8">
+          <div className="flex">
+            <button
+              onClick={() => setActiveTab('drive')}
+              className={`flex-1 flex items-center justify-center space-x-2 py-4 px-6 text-sm font-medium transition-colors ${
+                activeTab === 'drive'
+                  ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-700'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+              }`}
+            >
+              <FolderIcon className="w-5 h-5" />
+              <span>Google Drive</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('upload')}
+              className={`flex-1 flex items-center justify-center space-x-2 py-4 px-6 text-sm font-medium transition-colors ${
+                activeTab === 'upload'
+                  ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-700'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+              }`}
+            >
+              <Upload className="w-5 h-5" />
+              <span>File Upload</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('text')}
+              className={`flex-1 flex items-center justify-center space-x-2 py-4 px-6 text-sm font-medium transition-colors ${
+                activeTab === 'text'
+                  ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-700'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+              }`}
+            >
+              <Edit3 className="w-5 h-5" />
+              <span>Text Input</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Content Area */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Left Panel */}
+          <div className="space-y-6">
             {activeTab === 'drive' && (
-              <>
-                <div className="flex items-center justify-between mb-10">
-                  <h2 className="text-3xl font-bold text-gray-900 flex items-center">
-                    <FolderIcon className="mr-4 text-blue-600" size={32} />
-                    Google Drive
-                  </h2>
-                  <div className="flex items-center space-x-3">
-                    <Shield className="text-green-500" size={24} />
-                    <span className="text-sm font-semibold text-gray-600">Secure</span>
-                  </div>
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center space-x-2 mb-4">
+                  <FolderIcon className="w-6 h-6 text-blue-600" />
+                  <h2 className="text-xl font-semibold text-gray-900">Google Drive</h2>
+                  <Shield className="w-5 h-5 text-green-600" />
                 </div>
 
                 {/* Folder Selection */}
-                <div className="mb-10">
-                  <label className="block text-sm font-bold text-gray-700 mb-4">
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Choose a folder:
                   </label>
-                  <div className="relative">
-                    <select
-                      className="w-full p-5 border-2 border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/70 backdrop-blur-sm transition-all duration-200 text-base font-medium"
-                      onChange={(e) => {
-                        const folder = folders.find(f => f.id === e.target.value);
-                        setSelectedFolder(folder || null);
-                      }}
-                      value={selectedFolder?.id || ''}
-                      disabled={loading || !isConnected}
-                    >
-                      <option value="">Select a folder...</option>
-                      {folders.map(folder => (
-                        <option key={folder.id} value={folder.id}>
-                          {folder.name}
-                        </option>
-                      ))}
-                    </select>
-                    {loading && (
-                      <div className="absolute right-5 top-1/2 transform -translate-y-1/2">
-                        <Loader2 className="animate-spin text-blue-600" size={24} />
-                      </div>
-                    )}
-                  </div>
+                  <select
+                    value={selectedFolder?.id || ''}
+                    onChange={(e) => {
+                      const folder = folders.find(f => f.id === e.target.value);
+                      setSelectedFolder(folder || null);
+                      setDocuments([]);
+                      setSelectedDocuments([]);
+                    }}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  >
+                    <option value="">Select a folder...</option>
+                    {folders.map((folder) => (
+                      <option key={folder.id} value={folder.id}>
+                        {folder.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 {/* Documents List */}
                 {selectedFolder && (
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-8 flex items-center">
-                      <FileText className="mr-4 text-green-600" size={26} />
-                      Documents in "{selectedFolder.name}"
-                    </h3>
-                    
+                    <h3 className="text-lg font-medium text-gray-900 mb-3">Documents</h3>
                     {loading ? (
-                      <div className="flex items-center justify-center py-16">
-                        <div className="text-center">
-                          <Loader2 className="animate-spin text-blue-600 mx-auto mb-6" size={40} />
-                          <p className="text-gray-600 text-lg font-medium">Loading documents...</p>
-                        </div>
+                      <div className="flex items-center justify-center py-8">
+                        <Loader2 className="w-6 h-6 text-blue-600 animate-spin" />
                       </div>
-                    ) : documents.length === 0 ? (
-                      <div className="text-center py-16">
-                        <FileText className="mx-auto mb-6 text-gray-400" size={60} />
-                        <p className="text-gray-500 text-lg font-medium">No documents found in this folder</p>
-                      </div>
-                    ) : (
-                      <div className="space-y-4 max-h-96 overflow-y-auto custom-scrollbar">
-                        {documents.map(doc => (
-                          <label
-                            key={doc.id}
-                            className="flex items-center p-5 border-2 border-gray-200 rounded-2xl hover:bg-blue-50 hover:border-blue-300 cursor-pointer transition-all duration-200 group"
-                          >
+                    ) : documents.length > 0 ? (
+                      <div className="space-y-2 max-h-64 overflow-y-auto">
+                        {documents.map((doc) => (
+                          <label key={doc.id} className="flex items-center space-x-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer transition-colors">
                             <input
                               type="checkbox"
                               checked={selectedDocuments.some(d => d.id === doc.id)}
                               onChange={() => handleDocumentToggle(doc)}
-                              className="mr-5 h-6 w-6 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                             />
-                            <div className="flex-1">
-                              <div className="font-bold text-gray-900 group-hover:text-blue-700 transition-colors text-lg">
-                                {doc.name}
-                              </div>
-                              <div className="text-gray-500 font-medium">
-                                Modified: {new Date(doc.modifiedTime).toLocaleDateString()}
-                              </div>
-                            </div>
-                            <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                              <CheckCircle className="text-blue-600" size={24} />
-                            </div>
+                            <FileText className="w-5 h-5 text-gray-500" />
+                            <span className="text-sm text-gray-700">{doc.name}</span>
                           </label>
                         ))}
                       </div>
+                    ) : (
+                      <p className="text-gray-500 text-center py-4">No documents found</p>
                     )}
+                  </div>
+                )}
 
                 {/* Analyze Button */}
                 {selectedDocuments.length > 0 && (
                   <button
                     onClick={analyzeDocuments}
                     disabled={loading}
-                    className="mt-10 w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-5 px-8 rounded-2xl hover:from-blue-600 hover:to-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center font-bold text-xl transition-all duration-200 transform hover:scale-105 shadow-2xl"
+                    className="w-full mt-6 bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {loading ? (
-                      <>
-                        <Loader2 className="animate-spin mr-4" size={28} />
-                        Analyzing...
-                      </>
+                      <div className="flex items-center justify-center space-x-2">
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        <span>Analyzing...</span>
+                      </div>
                     ) : (
-                      <>
-                        <Zap className="mr-4" size={28} />
-                        Analyze {selectedDocuments.length} Document{selectedDocuments.length > 1 ? 's' : ''}
-                      </>
+                      <div className="flex items-center justify-center space-x-2">
+                        <Sparkles className="w-5 h-5" />
+                        <span>Analyze Documents</span>
+                      </div>
                     )}
                   </button>
                 )}
               </div>
             )}
-              </>
-            )}
 
-            {activeTab === 'upload' && (
-              <FileUploader />
-            )}
-
-            {activeTab === 'text' && (
-              <DemoAnalyzer />
-            )}
+            {activeTab === 'upload' && <FileUploader />}
+            {activeTab === 'text' && <DemoAnalyzer />}
           </div>
 
           {/* Right Panel - Analysis Results */}
-          <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/30 p-10">
-            <div className="flex items-center justify-between mb-10">
-              <h2 className="text-3xl font-bold text-gray-900 flex items-center">
-                <CheckCircle className="mr-4 text-green-600" size={32} />
-                Analysis Results
-              </h2>
-              <Globe className="text-blue-500" size={28} />
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center space-x-2 mb-4">
+              <CheckCircle className="w-6 h-6 text-green-600" />
+              <h2 className="text-xl font-semibold text-gray-900">Analysis Results</h2>
             </div>
 
-            {analysisResults.length === 0 ? (
-              <div className="text-center py-20">
-                <div className="w-32 h-32 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-8">
-                  <FileText className="text-blue-600" size={50} />
+            {error && (
+              <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <div className="flex items-center space-x-2">
+                  <AlertCircle className="w-5 h-5 text-red-600" />
+                  <span className="text-red-800">{error}</span>
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">Ready to Analyze</h3>
-                <p className="text-gray-600 max-w-md mx-auto text-lg leading-relaxed">
+                <button
+                  onClick={handleRetry}
+                  className="mt-2 text-sm text-red-600 hover:text-red-800 font-medium"
+                >
+                  Try again
+                </button>
+              </div>
+            )}
+
+            {analysisResults.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="flex justify-center space-x-4 mb-4">
+                  <Globe className="w-12 h-12 text-gray-300" />
+                  <FileText className="w-12 h-12 text-gray-300" />
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Ready to Analyze</h3>
+                <p className="text-gray-600">
                   Select documents and click analyze to see detailed results with spelling, grammar, and style suggestions.
                 </p>
               </div>
             ) : (
-              <div className="space-y-8">
+              <div className="space-y-6">
                 {analysisResults.map((result, index) => (
-                  <div key={index} className="border-2 border-gray-200 rounded-2xl p-8 bg-white/70 backdrop-blur-sm">
-                    <div className="flex items-center justify-between mb-6">
-                      <h3 className="text-xl font-bold text-gray-900">
-                        {result.documentTitle}
-                      </h3>
-                      <span className="px-4 py-2 bg-blue-100 text-blue-800 rounded-full text-sm font-bold">
-                        {result.language}
-                      </span>
+                  <div key={index} className="border border-gray-200 rounded-lg p-4">
+                    <h3 className="font-medium text-gray-900 mb-3">{result.documentTitle}</h3>
+                    
+                    {/* Language */}
+                    <div className="mb-4">
+                      <span className="text-sm font-medium text-gray-700">Language: </span>
+                      <span className="text-sm text-gray-600">{result.language}</span>
                     </div>
 
                     {/* Spelling Errors */}
                     {result.spellingErrors.length > 0 && (
-                      <div className="mb-8">
-                        <h4 className="font-bold text-red-700 mb-4 flex items-center text-lg">
-                          <AlertCircle className="mr-3" size={22} />
-                          Spelling Errors ({result.spellingErrors.length})
-                        </h4>
-                        <div className="space-y-3">
+                      <div className="mb-4">
+                        <h4 className="text-sm font-medium text-gray-700 mb-2">Spelling Errors</h4>
+                        <div className="space-y-2">
                           {result.spellingErrors.map((error, idx) => (
-                            <div key={idx} className="flex items-center p-4 bg-red-50 rounded-xl border border-red-100">
-                              <span className="text-red-600 font-bold">{error.original}</span>
-                              <span className="mx-3 text-gray-400 text-xl">→</span>
-                              <span className="text-green-600 font-bold">{error.corrected}</span>
+                            <div key={idx} className="text-sm">
+                              <span className="text-red-600 line-through">{error.original}</span>
+                              <span className="mx-2">→</span>
+                              <span className="text-green-600 font-medium">{error.corrected}</span>
                             </div>
                           ))}
                         </div>
@@ -489,17 +412,14 @@ function App() {
 
                     {/* Grammar Errors */}
                     {result.grammarErrors.length > 0 && (
-                      <div className="mb-8">
-                        <h4 className="font-bold text-orange-700 mb-4 flex items-center text-lg">
-                          <AlertCircle className="mr-3" size={22} />
-                          Grammar Errors ({result.grammarErrors.length})
-                        </h4>
-                        <div className="space-y-5">
+                      <div className="mb-4">
+                        <h4 className="text-sm font-medium text-gray-700 mb-2">Grammar Suggestions</h4>
+                        <div className="space-y-3">
                           {result.grammarErrors.map((error, idx) => (
-                            <div key={idx} className="p-5 bg-orange-50 rounded-xl border border-orange-100">
-                              <div className="text-gray-700 mb-3 font-bold">"{error.original}"</div>
-                              <div className="text-orange-600 mb-3 text-base">✖ {error.explanation}</div>
-                              <div className="text-green-600 font-bold">✔ "{error.corrected}"</div>
+                            <div key={idx} className="text-sm">
+                              <div className="text-red-600 mb-1">{error.original}</div>
+                              <div className="text-gray-600 mb-1">{error.explanation}</div>
+                              <div className="text-green-600 font-medium">{error.corrected}</div>
                             </div>
                           ))}
                         </div>
@@ -508,31 +428,16 @@ function App() {
 
                     {/* Style Suggestions */}
                     {result.styleSuggestions.length > 0 && (
-                      <div className="mb-8">
-                        <h4 className="font-bold text-blue-700 mb-4 flex items-center text-lg">
-                          <Sparkles className="mr-3" size={22} />
-                          Style Suggestions ({result.styleSuggestions.length})
-                        </h4>
-                        <div className="space-y-5">
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-700 mb-2">Style Suggestions</h4>
+                        <div className="space-y-2">
                           {result.styleSuggestions.map((suggestion, idx) => (
-                            <div key={idx} className="p-5 bg-blue-50 rounded-xl border border-blue-100">
-                              <div className="text-gray-700 mb-3 font-bold">Original: "{suggestion.original}"</div>
-                              <div className="text-blue-600 font-bold">Suggestion: "{suggestion.suggestion}"</div>
+                            <div key={idx} className="text-sm">
+                              <div className="text-gray-600 mb-1">{suggestion.original}</div>
+                              <div className="text-blue-600 font-medium">{suggestion.suggestion}</div>
                             </div>
                           ))}
                         </div>
-                      </div>
-                    )}
-
-                    {result.spellingErrors.length === 0 && 
-                     result.grammarErrors.length === 0 && 
-                     result.styleSuggestions.length === 0 && (
-                      <div className="text-center py-12">
-                        <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                          <CheckCircle className="text-green-600" size={40} />
-                        </div>
-                        <h4 className="text-xl font-bold text-green-700 mb-3">Perfect Document!</h4>
-                        <p className="text-green-600 text-lg font-medium">No issues found. Your document looks great!</p>
                       </div>
                     )}
                   </div>
@@ -541,15 +446,22 @@ function App() {
             )}
           </div>
         </div>
+      </main>
 
-        {/* Footer */}
-        <div className="text-center mt-20 text-gray-500">
-          <p className="flex items-center justify-center text-lg font-medium">
-            <Shield className="mr-3" size={20} />
-            Secure • Private • Professional
-          </p>
+      {/* Footer */}
+      <footer className="bg-white border-t border-gray-200 mt-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2 text-sm text-gray-600">
+              <Shield className="w-4 h-4" />
+              <span>Secure • Private • Professional</span>
+            </div>
+            <div className="text-sm text-gray-500">
+              Powered by AI
+            </div>
+          </div>
         </div>
-      </div>
+      </footer>
     </div>
   );
 }

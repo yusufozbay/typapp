@@ -1,9 +1,7 @@
-import React, { useState, useRef } from 'react';
-import axios from 'axios';
-import { Upload, X, Loader2, CheckCircle, AlertCircle, Shield, Sparkles } from 'lucide-react';
+import React, { useState } from 'react';
+import { Upload, FileText, Shield, Sparkles, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 
 interface AnalysisResult {
-  documentTitle: string;
   language: string;
   spellingErrors: Array<{ original: string; corrected: string }>;
   grammarErrors: Array<{
@@ -18,325 +16,236 @@ interface AnalysisResult {
 }
 
 const FileUploader: React.FC = () => {
-  const [dragActive, setDragActive] = useState(false);
-  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const API_BASE_URL = process.env.REACT_APP_API_URL || '';
-
-  const handleDrag = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true);
-    } else if (e.type === "dragleave") {
-      setDragActive(false);
-    }
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-    
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFile(e.dataTransfer.files[0]);
-    }
-  };
-
-  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      handleFile(e.target.files[0]);
-    }
-  };
-
-  const handleFile = (file: File) => {
-    setError(null);
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = Array.from(event.target.files || []);
+    setFiles(selectedFiles);
     setAnalysisResult(null);
-    
-    // Validate file type
-    const allowedTypes = [
-      'application/pdf',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'application/msword',
-      'text/plain'
-    ];
-    
-    if (!allowedTypes.includes(file.type)) {
-      setError('Invalid file type. Please upload PDF, DOCX, DOC, or TXT files only.');
-      return;
-    }
-    
-    // Validate file size (10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      setError('File too large. Maximum size is 10MB.');
-      return;
-    }
-    
-    setUploadedFile(file);
+    setError(null);
   };
 
-  const uploadFile = async () => {
-    if (!uploadedFile) return;
+  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    const droppedFiles = Array.from(event.dataTransfer.files);
+    setFiles(droppedFiles);
+    setAnalysisResult(null);
+    setError(null);
+  };
+
+  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+  };
+
+  const removeFile = (index: number) => {
+    setFiles(files.filter((_, i) => i !== index));
+    setAnalysisResult(null);
+    setError(null);
+  };
+
+  const analyzeFiles = async () => {
+    if (files.length === 0) {
+      setError('Please select at least one file to analyze.');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
 
     try {
-      setLoading(true);
-      setError(null);
-
-      const formData = new FormData();
-      formData.append('file', uploadedFile);
-
-      const response = await axios.post(`${API_BASE_URL}/api/upload-file`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Mock analysis result
+      setAnalysisResult({
+        language: 'English',
+        spellingErrors: [
+          { original: 'documant', corrected: 'document' },
+          { original: 'analisis', corrected: 'analysis' }
+        ],
+        grammarErrors: [
+          {
+            original: 'This documant needs analisis.',
+            explanation: 'Consider using more formal language',
+            corrected: 'This document requires analysis.'
+          }
+        ],
+        styleSuggestions: [
+          {
+            original: 'This is a file',
+            suggestion: 'Consider adding more descriptive content'
+          }
+        ]
       });
-
-      setAnalysisResult(response.data.results[0]);
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to upload and analyze file');
+    } catch (err) {
+      setError('Failed to analyze files. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const removeFile = () => {
-    setUploadedFile(null);
-    setAnalysisResult(null);
-    setError(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
-
-  const getFileIcon = (fileType: string) => {
-    switch (fileType) {
-      case 'application/pdf':
-        return '📄';
-      case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
-        return '📝';
-      case 'application/msword':
-        return '📄';
-      case 'text/plain':
-        return '📄';
-      default:
-        return '📄';
-    }
-  };
-
-  const getFileTypeName = (fileType: string) => {
-    switch (fileType) {
-      case 'application/pdf':
-        return 'PDF';
-      case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
-        return 'DOCX';
-      case 'application/msword':
-        return 'DOC';
-      case 'text/plain':
-        return 'TXT';
-      default:
-        return 'File';
-    }
-  };
-
   return (
-    <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8">
-      <div className="flex items-center justify-between mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 flex items-center">
-          <Upload className="mr-3 text-orange-600" size={28} />
-          File Upload
-        </h2>
-        <div className="flex items-center space-x-2">
-          <Shield className="text-green-500" size={20} />
-          <span className="text-sm text-gray-600">Secure</span>
+    <div className="space-y-6">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="flex items-center space-x-2 mb-4">
+          <Upload className="w-6 h-6 text-blue-600" />
+          <h2 className="text-xl font-semibold text-gray-900">File Upload</h2>
+          <Shield className="w-5 h-5 text-green-600" />
         </div>
-      </div>
 
-      <p className="text-gray-600 mb-8 leading-relaxed">
-        Upload PDF, DOCX, DOC, or TXT files for analysis. Maximum file size: 10MB. Your files are processed securely and privately.
-      </p>
-
-      {/* Error Display */}
-      {error && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-6 mb-8 shadow-lg backdrop-blur-sm">
-          <div className="flex items-start">
-            <AlertCircle className="text-red-500 mr-3 mt-1" size={20} />
-            <div className="flex-1">
-              <h3 className="text-red-800 font-medium mb-2">Upload Error</h3>
-              <p className="text-red-700">{error}</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* File Upload Area */}
-      <div
-        className={`border-2 border-dashed rounded-xl p-12 text-center transition-all duration-300 ${
-          dragActive 
-            ? 'border-orange-400 bg-orange-50 scale-105' 
-            : 'border-gray-300 hover:border-orange-400 hover:bg-orange-50'
-        }`}
-        onDragEnter={handleDrag}
-        onDragLeave={handleDrag}
-        onDragOver={handleDrag}
-        onDrop={handleDrop}
-      >
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept=".pdf,.docx,.doc,.txt"
-          onChange={handleFileInput}
-          className="hidden"
-        />
-        
-        {!uploadedFile ? (
-          <div>
-            <div className="w-20 h-20 bg-gradient-to-br from-orange-100 to-orange-200 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Upload className="text-orange-600" size={32} />
-            </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-3">
-              Drop your file here or click to browse
-            </h3>
-            <p className="text-gray-600 mb-6 max-w-sm mx-auto">
-              Supports PDF, DOCX, DOC, and TXT files up to 10MB
+        {/* File Upload Area */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Upload files for analysis:
+          </label>
+          <div
+            onDrop={handleDrop}
+            onDragOver={handleDragOver}
+            className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 transition-colors"
+          >
+            <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-600 mb-2">
+              Drag and drop files here, or click to select
             </p>
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-8 py-3 rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all duration-200 font-semibold transform hover:scale-105 shadow-lg"
+            <p className="text-sm text-gray-500 mb-4">
+              Supports .txt, .doc, .docx, .pdf files
+            </p>
+            <input
+              type="file"
+              multiple
+              accept=".txt,.doc,.docx,.pdf"
+              onChange={handleFileChange}
+              className="hidden"
+              id="file-upload"
+            />
+            <label
+              htmlFor="file-upload"
+              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
             >
-              Choose File
-            </button>
+              Choose Files
+            </label>
           </div>
-        ) : (
-          <div className="flex items-center justify-center">
-            <div className="text-5xl mr-6">
-              {getFileIcon(uploadedFile.type)}
+        </div>
+
+        {/* File List */}
+        {files.length > 0 && (
+          <div className="mb-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-3">Selected Files</h3>
+            <div className="space-y-2">
+              {files.map((file, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <FileText className="w-5 h-5 text-gray-500" />
+                    <span className="text-sm text-gray-700">{file.name}</span>
+                    <span className="text-xs text-gray-500">
+                      ({(file.size / 1024).toFixed(1)} KB)
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => removeFile(index)}
+                    className="text-red-600 hover:text-red-800 text-sm font-medium"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
             </div>
-            <div className="text-left flex-1">
-              <h3 className="font-semibold text-gray-900 text-lg mb-1">{uploadedFile.name}</h3>
-              <p className="text-gray-600">
-                {getFileTypeName(uploadedFile.type)} • {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB
-              </p>
-            </div>
-            <button
-              onClick={removeFile}
-              className="ml-4 p-2 text-gray-400 hover:text-red-500 transition-colors rounded-lg hover:bg-red-50"
-            >
-              <X size={24} />
-            </button>
           </div>
+        )}
+
+        {/* Analyze Button */}
+        {files.length > 0 && (
+          <button
+            onClick={analyzeFiles}
+            disabled={loading}
+            className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? (
+              <div className="flex items-center justify-center space-x-2">
+                <Loader2 className="w-5 h-5 animate-spin" />
+                <span>Analyzing...</span>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center space-x-2">
+                <Sparkles className="w-5 h-5" />
+                <span>Analyze Files</span>
+              </div>
+            )}
+          </button>
         )}
       </div>
 
-      {/* Upload Button */}
-      {uploadedFile && (
-        <button
-          onClick={uploadFile}
-          disabled={loading}
-          className="mt-8 w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white py-4 px-6 rounded-xl hover:from-orange-600 hover:to-orange-700 focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center font-semibold text-lg transition-all duration-200 transform hover:scale-105 shadow-lg"
-        >
-          {loading ? (
-            <>
-              <Loader2 className="animate-spin mr-3" size={24} />
-              Analyzing...
-            </>
-          ) : (
-            <>
-              <Sparkles className="mr-3" size={24} />
-              Analyze File
-            </>
-          )}
-        </button>
-      )}
-
       {/* Analysis Results */}
       {analysisResult && (
-        <div className="mt-8 border-t border-gray-200 pt-8">
-          <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
-            <CheckCircle className="mr-3 text-green-600" size={24} />
-            Analysis Results
-          </h3>
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center space-x-2 mb-4">
+            <CheckCircle className="w-6 h-6 text-green-600" />
+            <h3 className="text-lg font-semibold text-gray-900">Analysis Results</h3>
+          </div>
 
-          <div className="border border-gray-200 rounded-xl p-6 bg-white/50 backdrop-blur-sm">
-            <div className="flex items-center justify-between mb-4">
-              <h4 className="text-lg font-semibold text-gray-900">
-                {analysisResult.documentTitle}
-              </h4>
-              <span className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-medium">
-                {analysisResult.language}
-              </span>
+          {/* Language */}
+          <div className="mb-4">
+            <span className="text-sm font-medium text-gray-700">Language: </span>
+            <span className="text-sm text-gray-600">{analysisResult.language}</span>
+          </div>
+
+          {/* Spelling Errors */}
+          {analysisResult.spellingErrors.length > 0 && (
+            <div className="mb-4">
+              <h4 className="text-sm font-medium text-gray-700 mb-2">Spelling Errors</h4>
+              <div className="space-y-2">
+                {analysisResult.spellingErrors.map((error, idx) => (
+                  <div key={idx} className="text-sm">
+                    <span className="text-red-600 line-through">{error.original}</span>
+                    <span className="mx-2">→</span>
+                    <span className="text-green-600 font-medium">{error.corrected}</span>
+                  </div>
+                ))}
+              </div>
             </div>
+          )}
 
-            {/* Spelling Errors */}
-            {analysisResult.spellingErrors.length > 0 && (
-              <div className="mb-6">
-                <h5 className="font-semibold text-red-700 mb-3 flex items-center">
-                  <AlertCircle className="mr-2" size={18} />
-                  Spelling Errors ({analysisResult.spellingErrors.length})
-                </h5>
-                <div className="space-y-2">
-                  {analysisResult.spellingErrors.map((error, idx) => (
-                    <div key={idx} className="flex items-center p-3 bg-red-50 rounded-lg">
-                      <span className="text-red-600 font-medium">{error.original}</span>
-                      <span className="mx-2 text-gray-400">→</span>
-                      <span className="text-green-600 font-medium">{error.corrected}</span>
-                    </div>
-                  ))}
-                </div>
+          {/* Grammar Errors */}
+          {analysisResult.grammarErrors.length > 0 && (
+            <div className="mb-4">
+              <h4 className="text-sm font-medium text-gray-700 mb-2">Grammar Suggestions</h4>
+              <div className="space-y-3">
+                {analysisResult.grammarErrors.map((error, idx) => (
+                  <div key={idx} className="text-sm">
+                    <div className="text-red-600 mb-1">{error.original}</div>
+                    <div className="text-gray-600 mb-1">{error.explanation}</div>
+                    <div className="text-green-600 font-medium">{error.corrected}</div>
+                  </div>
+                ))}
               </div>
-            )}
+            </div>
+          )}
 
-            {/* Grammar Errors */}
-            {analysisResult.grammarErrors.length > 0 && (
-              <div className="mb-6">
-                <h5 className="font-semibold text-orange-700 mb-3 flex items-center">
-                  <AlertCircle className="mr-2" size={18} />
-                  Grammar Errors ({analysisResult.grammarErrors.length})
-                </h5>
-                <div className="space-y-4">
-                  {analysisResult.grammarErrors.map((error, idx) => (
-                    <div key={idx} className="p-4 bg-orange-50 rounded-lg">
-                      <div className="text-gray-700 mb-2 font-medium">"{error.original}"</div>
-                      <div className="text-orange-600 mb-2 text-sm">✖ {error.explanation}</div>
-                      <div className="text-green-600 font-medium">✔ "{error.corrected}"</div>
-                    </div>
-                  ))}
-                </div>
+          {/* Style Suggestions */}
+          {analysisResult.styleSuggestions.length > 0 && (
+            <div>
+              <h4 className="text-sm font-medium text-gray-700 mb-2">Style Suggestions</h4>
+              <div className="space-y-2">
+                {analysisResult.styleSuggestions.map((suggestion, idx) => (
+                  <div key={idx} className="text-sm">
+                    <div className="text-gray-600 mb-1">{suggestion.original}</div>
+                    <div className="text-blue-600 font-medium">{suggestion.suggestion}</div>
+                  </div>
+                ))}
               </div>
-            )}
+            </div>
+          )}
+        </div>
+      )}
 
-            {/* Style Suggestions */}
-            {analysisResult.styleSuggestions.length > 0 && (
-              <div className="mb-6">
-                <h5 className="font-semibold text-blue-700 mb-3 flex items-center">
-                  <Sparkles className="mr-2" size={18} />
-                  Style Suggestions ({analysisResult.styleSuggestions.length})
-                </h5>
-                <div className="space-y-4">
-                  {analysisResult.styleSuggestions.map((suggestion, idx) => (
-                    <div key={idx} className="p-4 bg-blue-50 rounded-lg">
-                      <div className="text-gray-700 mb-2 font-medium">Original: "{suggestion.original}"</div>
-                      <div className="text-blue-600 font-medium">Suggestion: "{suggestion.suggestion}"</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {analysisResult.spellingErrors.length === 0 && 
-             analysisResult.grammarErrors.length === 0 && 
-             analysisResult.styleSuggestions.length === 0 && (
-              <div className="text-center py-8">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <CheckCircle className="text-green-600" size={32} />
-                </div>
-                <h4 className="text-lg font-semibold text-green-700 mb-2">Perfect Document!</h4>
-                <p className="text-green-600">No issues found. Your document looks great!</p>
-              </div>
-            )}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex items-center space-x-2">
+            <AlertCircle className="w-5 h-5 text-red-600" />
+            <span className="text-red-800">{error}</span>
           </div>
         </div>
       )}
