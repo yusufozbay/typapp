@@ -24,10 +24,10 @@ import FileUploader from './components/FileUploader';
 import './App.css';
 
 // Sleek Modern UI - Google Drive Auth Flow
-// Version: 7.0 - ULTIMATE CACHE BUST
-// Build: 2024-08-04 18:00:00
-// Cache ID: ULTIMATE-FORCE-NEW-UI-20240804-180000
-// UI Style: Sleek Modern Glassmorphism with Auth Flow
+// Version: 8.0 - COMPLETE UI OVERHAUL
+// Build: 2024-08-04 18:15:00
+// Cache ID: COMPLETE-UI-OVERHAUL-20240804-181500
+// UI Style: Modern Dark Theme with Glassmorphism
 
 interface Folder {
   id: string;
@@ -164,17 +164,17 @@ function App() {
   }, [isGoogleDriveAuthorized, fetchFolders]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white force-new-ui-v7">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white complete-ui-overhaul-v8">
       {/* Header */}
-      <header className="bg-white/10 backdrop-blur-sm border-b border-white/20">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+      <header className="bg-white/5 backdrop-blur-md border-b border-white/10 shadow-2xl">
+        <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
-                <Star className="w-7 h-7 text-white" />
+              <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg">
+                <Star className="w-8 h-8 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-white">Typapp</h1>
+                <h1 className="text-3xl font-bold text-white">Typapp</h1>
                 <p className="text-gray-300 text-sm">Professional document analysis powered by AI</p>
               </div>
             </div>
@@ -187,14 +187,14 @@ function App() {
                   <span className="text-sm">Connecting...</span>
                 </div>
               ) : isConnected ? (
-                <div className="flex items-center space-x-2 text-green-400">
+                <div className="flex items-center space-x-2 text-green-400 bg-green-500/10 px-4 py-2 rounded-full">
                   <Wifi className="w-5 h-5" />
-                  <span className="text-sm">Connected</span>
+                  <span className="text-sm font-medium">Connected</span>
                 </div>
               ) : (
-                <div className="flex items-center space-x-2 text-red-400">
+                <div className="flex items-center space-x-2 text-red-400 bg-red-500/10 px-4 py-2 rounded-full">
                   <WifiOff className="w-5 h-5" />
-                  <span className="text-sm">Disconnected</span>
+                  <span className="text-sm font-medium">Disconnected</span>
                 </div>
               )}
             </div>
