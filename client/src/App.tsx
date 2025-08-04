@@ -13,7 +13,6 @@ import {
   Globe,
   Wifi,
   WifiOff,
-  Zap,
   Star,
   ArrowRight
 } from 'lucide-react';
