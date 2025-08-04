@@ -1,10 +1,8 @@
-const { LanguageDetector } = require('languagedetector');
 const natural = require('natural');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 class DocumentAnalyzer {
   constructor() {
-    this.languageDetector = new LanguageDetector();
     this.tokenizer = new natural.WordTokenizer();
     
     // Initialize Gemini AI
