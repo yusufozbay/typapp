@@ -12,7 +12,9 @@ import {
   Shield,
   Sparkles,
   Zap,
-  Globe
+  Globe,
+  Wifi,
+  WifiOff
 } from 'lucide-react';
 import DemoAnalyzer from './components/DemoAnalyzer';
 import FileUploader from './components/FileUploader';
@@ -200,30 +202,30 @@ function App() {
       <div className="relative z-10 container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl shadow-2xl mb-6">
-            <Sparkles className="text-white" size={32} />
+          <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl shadow-2xl mb-8">
+            <Sparkles className="text-white" size={40} />
           </div>
-          <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-4">
+          <h1 className="text-6xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-6">
             Typapp
           </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
             Professional document analysis and content editing powered by AI
           </p>
         </div>
 
         {/* Connection Status */}
         <div className="flex justify-center mb-8">
-          <div className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium ${
+          <div className={`inline-flex items-center px-6 py-3 rounded-full text-sm font-semibold shadow-lg ${
             isConnected 
-              ? 'bg-green-100 text-green-800 border border-green-200' 
-              : 'bg-red-100 text-red-800 border border-red-200'
+              ? 'bg-green-100 text-green-800 border-2 border-green-200' 
+              : 'bg-red-100 text-red-800 border-2 border-red-200'
           }`}>
             {connectionLoading ? (
-              <Loader2 className="animate-spin mr-2" size={16} />
+              <Loader2 className="animate-spin mr-3" size={18} />
             ) : isConnected ? (
-              <CheckCircle className="mr-2" size={16} />
+              <Wifi className="mr-3" size={18} />
             ) : (
-              <AlertCircle className="mr-2" size={16} />
+              <WifiOff className="mr-3" size={18} />
             )}
             {connectionLoading ? 'Checking connection...' : isConnected ? 'Connected' : 'Disconnected'}
           </div>
@@ -232,23 +234,23 @@ function App() {
         {/* Error Display */}
         {error && (
           <div className="max-w-4xl mx-auto mb-8">
-            <div className="bg-red-50 border border-red-200 rounded-xl p-6 shadow-lg backdrop-blur-sm">
+            <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-8 shadow-xl backdrop-blur-sm">
               <div className="flex items-start">
-                <AlertCircle className="text-red-500 mr-3 mt-1" size={20} />
+                <AlertCircle className="text-red-500 mr-4 mt-1" size={24} />
                 <div className="flex-1">
-                  <h3 className="text-red-800 font-medium mb-2">Connection Issue</h3>
-                  <p className="text-red-700 mb-4">{error}</p>
-                  <div className="flex gap-3">
+                  <h3 className="text-red-800 font-bold text-lg mb-3">Connection Issue</h3>
+                  <p className="text-red-700 mb-6 text-base">{error}</p>
+                  <div className="flex gap-4">
                     <button
                       onClick={handleRetry}
-                      className="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                      className="inline-flex items-center px-6 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all duration-200 font-semibold shadow-lg transform hover:scale-105"
                     >
-                      <RefreshCw className="mr-2" size={16} />
+                      <RefreshCw className="mr-2" size={18} />
                       Retry
                     </button>
                     <button
                       onClick={() => setError(null)}
-                      className="px-4 py-2 text-red-600 hover:text-red-700 transition-colors"
+                      className="px-6 py-3 text-red-600 hover:text-red-700 transition-colors font-semibold"
                     >
                       Dismiss
                     </button>
@@ -261,69 +263,69 @@ function App() {
 
         {/* Tab Navigation */}
         <div className="flex justify-center mb-12">
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-2 shadow-xl border border-white/20">
-            <div className="flex space-x-2">
+          <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-2 shadow-2xl border border-white/30">
+            <div className="flex space-x-3">
               <button
                 onClick={() => setActiveTab('drive')}
-                className={`px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300 flex items-center ${
+                className={`px-8 py-4 rounded-2xl text-sm font-semibold transition-all duration-300 flex items-center ${
                   activeTab === 'drive'
-                    ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg transform scale-105'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
+                    ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-xl transform scale-105'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-white/70'
                 }`}
               >
-                <FolderIcon className="mr-2" size={18} />
+                <FolderIcon className="mr-3" size={20} />
                 Google Drive
               </button>
               <button
                 onClick={() => setActiveTab('upload')}
-                className={`px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300 flex items-center ${
+                className={`px-8 py-4 rounded-2xl text-sm font-semibold transition-all duration-300 flex items-center ${
                   activeTab === 'upload'
-                    ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg transform scale-105'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
+                    ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-xl transform scale-105'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-white/70'
                 }`}
               >
-                <Upload className="mr-2" size={18} />
+                <Upload className="mr-3" size={20} />
                 File Upload
               </button>
               <button
                 onClick={() => setActiveTab('text')}
-                className={`px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300 flex items-center ${
+                className={`px-8 py-4 rounded-2xl text-sm font-semibold transition-all duration-300 flex items-center ${
                   activeTab === 'text'
-                    ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg transform scale-105'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
+                    ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-xl transform scale-105'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-white/70'
                 }`}
               >
-                <Edit3 className="mr-2" size={18} />
+                <Edit3 className="mr-3" size={20} />
                 Text Input
               </button>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 max-w-7xl mx-auto">
           {/* Left Panel - Content Selection */}
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8">
+          <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/30 p-10">
             {activeTab === 'drive' && (
               <>
-                <div className="flex items-center justify-between mb-8">
-                  <h2 className="text-2xl font-bold text-gray-900 flex items-center">
-                    <FolderIcon className="mr-3 text-blue-600" size={28} />
+                <div className="flex items-center justify-between mb-10">
+                  <h2 className="text-3xl font-bold text-gray-900 flex items-center">
+                    <FolderIcon className="mr-4 text-blue-600" size={32} />
                     Google Drive
                   </h2>
-                  <div className="flex items-center space-x-2">
-                    <Shield className="text-green-500" size={20} />
-                    <span className="text-sm text-gray-600">Secure</span>
+                  <div className="flex items-center space-x-3">
+                    <Shield className="text-green-500" size={24} />
+                    <span className="text-sm font-semibold text-gray-600">Secure</span>
                   </div>
                 </div>
 
                 {/* Folder Selection */}
-                <div className="mb-8">
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">
+                <div className="mb-10">
+                  <label className="block text-sm font-bold text-gray-700 mb-4">
                     Choose a folder:
                   </label>
                   <div className="relative">
                     <select
-                      className="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/50 backdrop-blur-sm transition-all duration-200"
+                      className="w-full p-5 border-2 border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/70 backdrop-blur-sm transition-all duration-200 text-base font-medium"
                       onChange={(e) => {
                         const folder = folders.find(f => f.id === e.target.value);
                         setSelectedFolder(folder || null);
@@ -339,8 +341,8 @@ function App() {
                       ))}
                     </select>
                     {loading && (
-                      <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
-                        <Loader2 className="animate-spin text-blue-600" size={20} />
+                      <div className="absolute right-5 top-1/2 transform -translate-y-1/2">
+                        <Loader2 className="animate-spin text-blue-600" size={24} />
                       </div>
                     )}
                   </div>
@@ -349,46 +351,46 @@ function App() {
                 {/* Documents List */}
                 {selectedFolder && (
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
-                      <FileText className="mr-3 text-green-600" size={22} />
+                    <h3 className="text-xl font-bold text-gray-900 mb-8 flex items-center">
+                      <FileText className="mr-4 text-green-600" size={26} />
                       Documents in "{selectedFolder.name}"
                     </h3>
                     
                     {loading ? (
-                      <div className="flex items-center justify-center py-12">
+                      <div className="flex items-center justify-center py-16">
                         <div className="text-center">
-                          <Loader2 className="animate-spin text-blue-600 mx-auto mb-4" size={32} />
-                          <p className="text-gray-600">Loading documents...</p>
+                          <Loader2 className="animate-spin text-blue-600 mx-auto mb-6" size={40} />
+                          <p className="text-gray-600 text-lg font-medium">Loading documents...</p>
                         </div>
                       </div>
                     ) : documents.length === 0 ? (
-                      <div className="text-center py-12">
-                        <FileText className="mx-auto mb-4 text-gray-400" size={48} />
-                        <p className="text-gray-500">No documents found in this folder</p>
+                      <div className="text-center py-16">
+                        <FileText className="mx-auto mb-6 text-gray-400" size={60} />
+                        <p className="text-gray-500 text-lg font-medium">No documents found in this folder</p>
                       </div>
                     ) : (
-                      <div className="space-y-3 max-h-80 overflow-y-auto custom-scrollbar">
+                      <div className="space-y-4 max-h-96 overflow-y-auto custom-scrollbar">
                         {documents.map(doc => (
                           <label
                             key={doc.id}
-                            className="flex items-center p-4 border border-gray-200 rounded-xl hover:bg-blue-50 hover:border-blue-300 cursor-pointer transition-all duration-200 group"
+                            className="flex items-center p-5 border-2 border-gray-200 rounded-2xl hover:bg-blue-50 hover:border-blue-300 cursor-pointer transition-all duration-200 group"
                           >
                             <input
                               type="checkbox"
                               checked={selectedDocuments.some(d => d.id === doc.id)}
                               onChange={() => handleDocumentToggle(doc)}
-                              className="mr-4 h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                              className="mr-5 h-6 w-6 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                             />
                             <div className="flex-1">
-                              <div className="font-medium text-gray-900 group-hover:text-blue-700 transition-colors">
+                              <div className="font-bold text-gray-900 group-hover:text-blue-700 transition-colors text-lg">
                                 {doc.name}
                               </div>
-                              <div className="text-sm text-gray-500">
+                              <div className="text-gray-500 font-medium">
                                 Modified: {new Date(doc.modifiedTime).toLocaleDateString()}
                               </div>
                             </div>
                             <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                              <CheckCircle className="text-blue-600" size={20} />
+                              <CheckCircle className="text-blue-600" size={24} />
                             </div>
                           </label>
                         ))}
@@ -400,16 +402,16 @@ function App() {
                   <button
                     onClick={analyzeDocuments}
                     disabled={loading}
-                    className="mt-8 w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-4 px-6 rounded-xl hover:from-blue-600 hover:to-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center font-semibold text-lg transition-all duration-200 transform hover:scale-105 shadow-lg"
+                    className="mt-10 w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-5 px-8 rounded-2xl hover:from-blue-600 hover:to-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center font-bold text-xl transition-all duration-200 transform hover:scale-105 shadow-2xl"
                   >
                     {loading ? (
                       <>
-                        <Loader2 className="animate-spin mr-3" size={24} />
+                        <Loader2 className="animate-spin mr-4" size={28} />
                         Analyzing...
                       </>
                     ) : (
                       <>
-                        <Zap className="mr-3" size={24} />
+                        <Zap className="mr-4" size={28} />
                         Analyze {selectedDocuments.length} Document{selectedDocuments.length > 1 ? 's' : ''}
                       </>
                     )}
@@ -430,51 +432,51 @@ function App() {
           </div>
 
           {/* Right Panel - Analysis Results */}
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8">
-            <div className="flex items-center justify-between mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 flex items-center">
-                <CheckCircle className="mr-3 text-green-600" size={28} />
+          <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/30 p-10">
+            <div className="flex items-center justify-between mb-10">
+              <h2 className="text-3xl font-bold text-gray-900 flex items-center">
+                <CheckCircle className="mr-4 text-green-600" size={32} />
                 Analysis Results
               </h2>
-              <Globe className="text-blue-500" size={24} />
+              <Globe className="text-blue-500" size={28} />
             </div>
 
             {analysisResults.length === 0 ? (
-              <div className="text-center py-16">
-                <div className="w-24 h-24 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <FileText className="text-blue-600" size={40} />
+              <div className="text-center py-20">
+                <div className="w-32 h-32 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-8">
+                  <FileText className="text-blue-600" size={50} />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">Ready to Analyze</h3>
-                <p className="text-gray-600 max-w-sm mx-auto">
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">Ready to Analyze</h3>
+                <p className="text-gray-600 max-w-md mx-auto text-lg leading-relaxed">
                   Select documents and click analyze to see detailed results with spelling, grammar, and style suggestions.
                 </p>
               </div>
             ) : (
-              <div className="space-y-6">
+              <div className="space-y-8">
                 {analysisResults.map((result, index) => (
-                  <div key={index} className="border border-gray-200 rounded-xl p-6 bg-white/50 backdrop-blur-sm">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-lg font-semibold text-gray-900">
+                  <div key={index} className="border-2 border-gray-200 rounded-2xl p-8 bg-white/70 backdrop-blur-sm">
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="text-xl font-bold text-gray-900">
                         {result.documentTitle}
                       </h3>
-                      <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                      <span className="px-4 py-2 bg-blue-100 text-blue-800 rounded-full text-sm font-bold">
                         {result.language}
                       </span>
                     </div>
 
                     {/* Spelling Errors */}
                     {result.spellingErrors.length > 0 && (
-                      <div className="mb-6">
-                        <h4 className="font-semibold text-red-700 mb-3 flex items-center">
-                          <AlertCircle className="mr-2" size={18} />
+                      <div className="mb-8">
+                        <h4 className="font-bold text-red-700 mb-4 flex items-center text-lg">
+                          <AlertCircle className="mr-3" size={22} />
                           Spelling Errors ({result.spellingErrors.length})
                         </h4>
-                        <div className="space-y-2">
+                        <div className="space-y-3">
                           {result.spellingErrors.map((error, idx) => (
-                            <div key={idx} className="flex items-center p-3 bg-red-50 rounded-lg">
-                              <span className="text-red-600 font-medium">{error.original}</span>
-                              <span className="mx-2 text-gray-400">→</span>
-                              <span className="text-green-600 font-medium">{error.corrected}</span>
+                            <div key={idx} className="flex items-center p-4 bg-red-50 rounded-xl border border-red-100">
+                              <span className="text-red-600 font-bold">{error.original}</span>
+                              <span className="mx-3 text-gray-400 text-xl">→</span>
+                              <span className="text-green-600 font-bold">{error.corrected}</span>
                             </div>
                           ))}
                         </div>
@@ -483,17 +485,17 @@ function App() {
 
                     {/* Grammar Errors */}
                     {result.grammarErrors.length > 0 && (
-                      <div className="mb-6">
-                        <h4 className="font-semibold text-orange-700 mb-3 flex items-center">
-                          <AlertCircle className="mr-2" size={18} />
+                      <div className="mb-8">
+                        <h4 className="font-bold text-orange-700 mb-4 flex items-center text-lg">
+                          <AlertCircle className="mr-3" size={22} />
                           Grammar Errors ({result.grammarErrors.length})
                         </h4>
-                        <div className="space-y-4">
+                        <div className="space-y-5">
                           {result.grammarErrors.map((error, idx) => (
-                            <div key={idx} className="p-4 bg-orange-50 rounded-lg">
-                              <div className="text-gray-700 mb-2 font-medium">"{error.original}"</div>
-                              <div className="text-orange-600 mb-2 text-sm">✖ {error.explanation}</div>
-                              <div className="text-green-600 font-medium">✔ "{error.corrected}"</div>
+                            <div key={idx} className="p-5 bg-orange-50 rounded-xl border border-orange-100">
+                              <div className="text-gray-700 mb-3 font-bold">"{error.original}"</div>
+                              <div className="text-orange-600 mb-3 text-base">✖ {error.explanation}</div>
+                              <div className="text-green-600 font-bold">✔ "{error.corrected}"</div>
                             </div>
                           ))}
                         </div>
@@ -502,16 +504,16 @@ function App() {
 
                     {/* Style Suggestions */}
                     {result.styleSuggestions.length > 0 && (
-                      <div className="mb-6">
-                        <h4 className="font-semibold text-blue-700 mb-3 flex items-center">
-                          <Sparkles className="mr-2" size={18} />
+                      <div className="mb-8">
+                        <h4 className="font-bold text-blue-700 mb-4 flex items-center text-lg">
+                          <Sparkles className="mr-3" size={22} />
                           Style Suggestions ({result.styleSuggestions.length})
                         </h4>
-                        <div className="space-y-4">
+                        <div className="space-y-5">
                           {result.styleSuggestions.map((suggestion, idx) => (
-                            <div key={idx} className="p-4 bg-blue-50 rounded-lg">
-                              <div className="text-gray-700 mb-2 font-medium">Original: "{suggestion.original}"</div>
-                              <div className="text-blue-600 font-medium">Suggestion: "{suggestion.suggestion}"</div>
+                            <div key={idx} className="p-5 bg-blue-50 rounded-xl border border-blue-100">
+                              <div className="text-gray-700 mb-3 font-bold">Original: "{suggestion.original}"</div>
+                              <div className="text-blue-600 font-bold">Suggestion: "{suggestion.suggestion}"</div>
                             </div>
                           ))}
                         </div>
@@ -521,12 +523,12 @@ function App() {
                     {result.spellingErrors.length === 0 && 
                      result.grammarErrors.length === 0 && 
                      result.styleSuggestions.length === 0 && (
-                      <div className="text-center py-8">
-                        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                          <CheckCircle className="text-green-600" size={32} />
+                      <div className="text-center py-12">
+                        <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                          <CheckCircle className="text-green-600" size={40} />
                         </div>
-                        <h4 className="text-lg font-semibold text-green-700 mb-2">Perfect Document!</h4>
-                        <p className="text-green-600">No issues found. Your document looks great!</p>
+                        <h4 className="text-xl font-bold text-green-700 mb-3">Perfect Document!</h4>
+                        <p className="text-green-600 text-lg font-medium">No issues found. Your document looks great!</p>
                       </div>
                     )}
                   </div>
@@ -537,9 +539,9 @@ function App() {
         </div>
 
         {/* Footer */}
-        <div className="text-center mt-16 text-gray-500">
-          <p className="flex items-center justify-center">
-            <Shield className="mr-2" size={16} />
+        <div className="text-center mt-20 text-gray-500">
+          <p className="flex items-center justify-center text-lg font-medium">
+            <Shield className="mr-3" size={20} />
             Secure • Private • Professional
           </p>
         </div>
