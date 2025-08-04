@@ -24,8 +24,10 @@ import FileUploader from './components/FileUploader';
 import './App.css';
 
 // Sleek Modern UI - Google Drive Auth Flow
-// Version: 6.0 - Auth-First Design
-// Build: 2024-08-04 17:30:00
+// Version: 7.0 - ULTIMATE CACHE BUST
+// Build: 2024-08-04 18:00:00
+// Cache ID: ULTIMATE-FORCE-NEW-UI-20240804-180000
+// UI Style: Sleek Modern Glassmorphism with Auth Flow
 
 interface Folder {
   id: string;
@@ -251,42 +253,37 @@ function App() {
   }, [isGoogleDriveAuthorized, fetchFolders]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 force-new-ui-v6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white force-new-ui-v7">
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b border-white/20 shadow-sm">
-        <div className="max-w-7xl mx-auto px-6 py-8">
+      <header className="bg-white/10 backdrop-blur-sm border-b border-white/20">
+        <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <div className="relative">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
-                  <Sparkles className="w-7 h-7 text-white" />
-                </div>
-                <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                <Star className="w-7 h-7 text-white" />
               </div>
               <div>
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-                  Typapp
-                </h1>
-                <p className="text-gray-600 font-medium">Professional document analysis powered by AI</p>
+                <h1 className="text-2xl font-bold text-white">Typapp</h1>
+                <p className="text-gray-300 text-sm">Professional document analysis powered by AI</p>
               </div>
             </div>
             
             {/* Connection Status */}
             <div className="flex items-center space-x-3">
               {connectionLoading ? (
-                <div className="flex items-center space-x-2 text-gray-500">
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  <span className="text-sm font-medium">Connecting...</span>
+                <div className="flex items-center space-x-2 text-blue-400">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span className="text-sm">Connecting...</span>
                 </div>
               ) : isConnected ? (
-                <div className="flex items-center space-x-2 text-green-600 bg-green-50 px-4 py-2 rounded-full">
+                <div className="flex items-center space-x-2 text-green-400">
                   <Wifi className="w-5 h-5" />
-                  <span className="text-sm font-semibold">Connected</span>
+                  <span className="text-sm">Connected</span>
                 </div>
               ) : (
-                <div className="flex items-center space-x-2 text-red-600 bg-red-50 px-4 py-2 rounded-full">
+                <div className="flex items-center space-x-2 text-red-400">
                   <WifiOff className="w-5 h-5" />
-                  <span className="text-sm font-semibold">Disconnected</span>
+                  <span className="text-sm">Disconnected</span>
                 </div>
               )}
             </div>
