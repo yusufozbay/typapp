@@ -1,6 +1,6 @@
 [build]
   # Build command for the frontend
-  command = "cd client && chmod +x build.sh && ./build.sh"
+  command = "cd client && npm install --legacy-peer-deps --force && NODE_OPTIONS='--openssl-legacy-provider' npm run build"
   
   # Publish directory (where the built files are located)
   publish = "client/build"
