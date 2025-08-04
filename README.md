@@ -121,20 +121,33 @@ npm start
 
 ### Backend Deployment
 
-Deploy the backend to Railway, Render, or Heroku:
+Deploy the backend to Render, Railway, or Heroku:
 
-1. **Railway** (Recommended):
-   - Go to [Railway](https://railway.app)
-   - Connect your GitHub repository
-   - Set the root directory to `server`
+1. **Render** (Recommended):
+   - Go to [Render](https://render.com)
+   - Sign up/Login with GitHub
+   - Create New → "Web Service"
+   - Connect GitHub repository: `yusufozbay/typapp`
+   - Configure settings:
+     - **Name**: `typapp-backend`
+     - **Root Directory**: `server`
+     - **Build Command**: `npm install`
+     - **Start Command**: `npm start`
    - Add environment variables:
      ```
      GEMINI_API_KEY=your_gemini_api_key_here
      GOOGLE_APPLICATION_CREDENTIALS=your_service_account_json_content
+     NODE_ENV=production
      ```
 
-2. **Update Frontend API URL**:
-   - Copy your backend URL from Railway
+2. **Alternative: Railway**:
+   - Go to [Railway](https://railway.app)
+   - Connect your GitHub repository
+   - Set the root directory to `server`
+   - Add the same environment variables as above
+
+3. **Update Frontend API URL**:
+   - Copy your backend URL from Render/Railway
    - Update `REACT_APP_API_URL` in Netlify environment variables
 
 ## Usage
