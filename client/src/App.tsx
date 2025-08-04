@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { Folder as FolderIcon, FileText, Search, Loader2, CheckCircle, AlertCircle, Upload, Edit3 } from 'lucide-react';
 import DemoAnalyzer from './components/DemoAnalyzer';
@@ -50,19 +50,9 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchFolders();
-  }, []);
-
-  useEffect(() => {
-    if (selectedFolder) {
-      fetchDocuments(selectedFolder.id);
-    }
-  }, [selectedFolder]);
-
   const API_BASE_URL = process.env.REACT_APP_API_URL || '';
 
-  const fetchFolders = async () => {
+  const fetchFolders = useCallback(async () => {
     try {
       setLoading(true);
       const response = await axios.get(`${API_BASE_URL}/api/folders`);
@@ -72,9 +62,9 @@ function App() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [API_BASE_URL]);
 
-  const fetchDocuments = async (folderId: string) => {
+  const fetchDocuments = useCallback(async (folderId: string) => {
     try {
       setLoading(true);
       const response = await axios.get(`${API_BASE_URL}/api/folder/${folderId}/documents`);
@@ -84,9 +74,19 @@ function App() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [API_BASE_URL]);
 
-  const handleDocumentToggle = (document: Document) => {
+  useEffect(() => {
+    fetchFolders();
+  }, [fetchFolders]);
+
+  useEffect(() => {
+    if (selectedFolder) {
+      fetchDocuments(selectedFolder.id);
+    }
+  }, [selectedFolder, fetchDocuments]);
+
+  const handleDocumentToggle = useCallback((document: Document) => {
     setSelectedDocuments(prev => {
       const isSelected = prev.find(doc => doc.id === document.id);
       if (isSelected) {
@@ -95,9 +95,9 @@ function App() {
         return [...prev, document];
       }
     });
-  };
+  }, []);
 
-  const analyzeDocuments = async () => {
+  const analyzeDocuments = useCallback(async () => {
     if (selectedDocuments.length === 0) {
       setError('Please select at least one document to analyze.');
       return;
@@ -125,7 +125,7 @@ function App() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedDocuments, API_BASE_URL]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
