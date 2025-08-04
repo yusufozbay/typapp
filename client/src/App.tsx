@@ -17,8 +17,7 @@ import {
   ArrowRight,
   Lock,
   Unlock,
-  Key,
-  UserCheck
+  Key
 } from 'lucide-react';
 import DemoAnalyzer from './components/DemoAnalyzer';
 import FileUploader from './components/FileUploader';
