@@ -2,6 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
+/* FORCE NEW UI STYLES - OVERRIDE ALL CACHED STYLES */
+.force-new-ui-v5 {
+  background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 50%, #e0f2fe 100%) !important;
+}
+
+.force-new-ui-v5 * {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif !important;
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',

@@ -21,9 +21,11 @@ import DemoAnalyzer from './components/DemoAnalyzer';
 import FileUploader from './components/FileUploader';
 import './App.css';
 
-// Sleek Modern UI Design - ContentAI Style
-// Version: 4.0 - Modern & Clean
-// Build: 2024-08-04 17:00:00
+// FORCE NEW UI - AGGRESSIVE CACHE BUST
+// Version: 5.0 - FORCE DEPLOY
+// Build: 2024-08-04 17:15:00
+// Cache ID: FORCE-NEW-UI-20240804-171500
+// UI Style: Sleek Modern Glassmorphism
 
 interface Folder {
   id: string;
@@ -176,7 +178,7 @@ function App() {
   }, [fetchFolders]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 force-new-ui-v5">
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-sm border-b border-white/20 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-8">
