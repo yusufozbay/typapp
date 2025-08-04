@@ -78,8 +78,8 @@ const DemoAnalyzer: React.FC = () => {
     <div className="space-y-6">
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="flex items-center space-x-2 mb-4">
-          <Edit3 className="w-6 h-6 text-blue-600" />
-          <h2 className="text-xl font-semibold text-gray-900">Text Analysis</h2>
+          <Edit3 className="w-5 h-5 text-blue-600" />
+          <h2 className="text-lg font-semibold text-gray-900">Text Analysis</h2>
         </div>
 
         {/* Sample Texts */}
@@ -92,7 +92,7 @@ const DemoAnalyzer: React.FC = () => {
               <button
                 key={index}
                 onClick={() => handleSampleText(sample)}
-                className="px-4 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
               >
                 Sample {index + 1}
               </button>
@@ -109,7 +109,7 @@ const DemoAnalyzer: React.FC = () => {
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder="Paste or type your text here for analysis..."
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
+            className="w-full px-3 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
             rows={6}
           />
         </div>
@@ -118,7 +118,7 @@ const DemoAnalyzer: React.FC = () => {
         <button
           onClick={handleAnalyze}
           disabled={loading || !text.trim()}
-          className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full bg-blue-600 text-white py-3 px-6 rounded-md font-medium hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? (
             <div className="flex items-center justify-center space-x-2">
@@ -138,7 +138,7 @@ const DemoAnalyzer: React.FC = () => {
       {analysisResult && (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center space-x-2 mb-4">
-            <CheckCircle className="w-6 h-6 text-green-600" />
+            <CheckCircle className="w-5 h-5 text-green-600" />
             <h3 className="text-lg font-semibold text-gray-900">Analysis Results</h3>
           </div>
 
