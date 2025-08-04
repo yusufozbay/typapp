@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles, Zap, Globe, Edit3, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
+import { Sparkles, Edit3, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 
 interface AnalysisResult {
   language: string;

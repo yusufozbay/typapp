@@ -8,10 +8,8 @@ import {
   AlertCircle, 
   Upload, 
   Edit3, 
-  RefreshCw,
   Shield,
   Sparkles,
-  Zap,
   Globe,
   Wifi,
   WifiOff
@@ -34,13 +32,6 @@ interface Document {
   name: string;
   createdTime: string;
   modifiedTime: string;
-}
-
-interface DocumentContent {
-  id: string;
-  title: string;
-  content: string;
-  lastModified: string;
 }
 
 interface AnalysisResult {
