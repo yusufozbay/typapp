@@ -104,13 +104,33 @@ function App() {
   }, [API_BASE_URL]);
 
   const authorizeGoogleDrive = async () => {
+    setAuthLoading(true);
     try {
-      setAuthLoading(true);
-      setError(null);
-      // Redirect to Google OAuth
-      window.location.href = `${API_BASE_URL}/api/auth/google`;
-    } catch (err) {
-      setError('Failed to initiate Google Drive authorization.');
+      const response = await fetch(`${API_BASE_URL}/api/auth/google`);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        if (errorData.error === 'Google OAuth not configured') {
+          setError('Google Drive authorization is not configured on the server. Please contact the administrator.');
+        } else {
+          setError('Failed to start Google Drive authorization');
+        }
+        return;
+      }
+      
+      // If response is a redirect, follow it
+      if (response.redirected) {
+        window.location.href = response.url;
+      } else {
+        // Handle the case where we get a JSON response instead of a redirect
+        const data = await response.json();
+        if (data.error) {
+          setError(data.message || 'Authorization failed');
+        }
+      }
+    } catch (error) {
+      console.error('Authorization error:', error);
+      setError('Failed to connect to authorization service');
     } finally {
       setAuthLoading(false);
     }
@@ -312,147 +332,106 @@ function App() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Left Panel */}
           <div className="space-y-8">
-            {activeTab === 'drive' && (
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/30 p-8">
-                <div className="flex items-center justify-between mb-8">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center">
-                      <FolderIcon className="w-6 h-6 text-white" />
-                    </div>
-                    <h2 className="text-2xl font-bold text-gray-900">Google Drive</h2>
-                  </div>
-                  <div className="flex items-center space-x-2 bg-green-50 px-3 py-2 rounded-full">
-                    <Shield className="w-4 h-4 text-green-600" />
-                    <span className="text-sm font-semibold text-green-700">Secure</span>
-                  </div>
-                </div>
-
-                {/* Google Drive Authorization Status */}
+            {/* Google Drive Tab */}
+            {activeTab === 'google-drive' && (
+              <div className="space-y-6">
                 {!isGoogleDriveAuthorized ? (
-                  <div className="text-center py-12">
-                    <div className="w-20 h-20 bg-gradient-to-br from-orange-100 to-red-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                      <Lock className="w-10 h-10 text-orange-600" />
+                  <div className="text-center space-y-4">
+                    <div className="flex justify-center">
+                      <div className="p-4 bg-gradient-to-br from-blue-500/20 to-purple-600/20 rounded-full">
+                        <Lock className="w-12 h-12 text-blue-400" />
+                      </div>
                     </div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-4">Authorize Google Drive</h3>
-                    <p className="text-gray-600 mb-8 max-w-md mx-auto leading-relaxed">
-                      To access your Google Drive folders and documents, you need to authorize Typapp to access your Google account.
+                    <h3 className="text-2xl font-bold text-white">Authorize Google Drive</h3>
+                    <p className="text-gray-300 max-w-md mx-auto">
+                      Connect your Google Drive to access and analyze your documents securely.
                     </p>
+                    
+                    {error && (
+                      <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-4">
+                        <p className="text-red-300 text-sm">{error}</p>
+                        {error.includes('not configured') && (
+                          <p className="text-gray-400 text-xs mt-2">
+                            Demo mode: You can still test the app with sample data below.
+                          </p>
+                        )}
+                      </div>
+                    )}
+                    
                     <button
                       onClick={authorizeGoogleDrive}
                       disabled={authLoading}
-                      className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 px-8 rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-purple-700 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 shadow-xl"
+                      className="btn-gradient px-8 py-3 rounded-lg font-semibold text-white transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {authLoading ? (
-                        <div className="flex items-center justify-center space-x-3">
-                          <Loader2 className="w-6 h-6 animate-spin" />
+                        <div className="flex items-center space-x-2">
+                          <Loader2 className="w-5 h-5 animate-spin" />
                           <span>Authorizing...</span>
                         </div>
                       ) : (
-                        <div className="flex items-center justify-center space-x-3">
-                          <Key className="w-6 h-6" />
+                        <div className="flex items-center space-x-2">
+                          <Key className="w-5 h-5" />
                           <span>Authorize Google Drive</span>
-                          <ArrowRight className="w-5 h-5" />
                         </div>
                       )}
                     </button>
-                    <div className="mt-6 flex items-center justify-center space-x-2 text-sm text-gray-500">
-                      <Shield className="w-4 h-4" />
-                      <span>Your data is secure and private</span>
-                    </div>
+                    
+                    {/* Demo Mode Fallback */}
+                    {error && error.includes('not configured') && (
+                      <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                        <h4 className="text-blue-300 font-semibold mb-2">Demo Mode Available</h4>
+                        <p className="text-gray-300 text-sm mb-3">
+                          While Google Drive authorization is being set up, you can test the app with demo data.
+                        </p>
+                        <button
+                          onClick={() => {
+                            setError(null);
+                            setIsGoogleDriveAuthorized(true);
+                          }}
+                          className="btn-secondary px-4 py-2 text-sm"
+                        >
+                          Try Demo Mode
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ) : (
-                  <>
-                    {/* Authorization Success */}
-                    <div className="mb-8 p-6 bg-green-50 border-2 border-green-200 rounded-xl">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
-                          <Unlock className="w-6 h-6 text-white" />
-                        </div>
-                        <div>
-                          <h4 className="text-lg font-semibold text-green-800">Google Drive Authorized</h4>
-                          <p className="text-green-600 text-sm">You can now access your folders and documents</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Folder Selection */}
-                    <div className="mb-8">
-                      <label className="block text-lg font-semibold text-gray-900 mb-4">
-                        Choose a folder:
-                      </label>
-                      <select
-                        value={selectedFolder?.id || ''}
-                        onChange={(e) => {
-                          const folder = folders.find(f => f.id === e.target.value);
-                          setSelectedFolder(folder || null);
-                          setDocuments([]);
-                          setSelectedDocuments([]);
-                        }}
-                        className="w-full px-6 py-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 text-base font-medium bg-white/50 backdrop-blur-sm"
-                      >
-                        <option value="">Select a folder...</option>
-                        {folders.map((folder) => (
-                          <option key={folder.id} value={folder.id}>
-                            {folder.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Documents List */}
-                    {selectedFolder && (
+                  <div className="space-y-4">
+                    <div className="flex items-center space-x-3 p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
+                      <Unlock className="w-6 h-6 text-green-400" />
                       <div>
-                        <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
-                          <FileText className="w-6 h-6 text-blue-600 mr-3" />
-                          Documents
-                        </h3>
-                        {loading ? (
-                          <div className="flex items-center justify-center py-12">
-                            <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
-                          </div>
-                        ) : documents.length > 0 ? (
-                          <div className="space-y-3 max-h-80 overflow-y-auto">
-                            {documents.map((doc) => (
-                              <label key={doc.id} className="flex items-center space-x-4 p-4 rounded-xl border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50/50 cursor-pointer transition-all duration-300 group">
-                                <input
-                                  type="checkbox"
-                                  checked={selectedDocuments.some(d => d.id === doc.id)}
-                                  onChange={() => handleDocumentToggle(doc)}
-                                  className="w-5 h-5 text-blue-600 border-gray-300 rounded-lg focus:ring-blue-500 focus:ring-2"
-                                />
-                                <FileText className="w-6 h-6 text-gray-500 group-hover:text-blue-600 transition-colors" />
-                                <span className="text-base font-medium text-gray-700 group-hover:text-gray-900 transition-colors">{doc.name}</span>
-                              </label>
-                            ))}
-                          </div>
-                        ) : (
-                          <p className="text-gray-500 text-center py-8">No documents found</p>
-                        )}
+                        <h3 className="text-green-300 font-semibold">Google Drive Authorized</h3>
+                        <p className="text-gray-400 text-sm">Your data is secure and private</p>
+                      </div>
+                    </div>
+                    
+                    {loading ? (
+                      <div className="flex justify-center py-8">
+                        <Loader2 className="w-8 h-8 animate-spin text-blue-400" />
+                      </div>
+                    ) : folders.length > 0 ? (
+                      <div className="space-y-3">
+                        <h3 className="text-lg font-semibold text-white">Select a Folder</h3>
+                        <div className="grid gap-3">
+                          {folders.map((folder) => (
+                            <button
+                              key={folder.id}
+                              onClick={() => handleFolderSelect(folder)}
+                              className="flex items-center space-x-3 p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-all duration-300 hover:scale-105"
+                            >
+                              <FolderIcon className="w-5 h-5 text-blue-400" />
+                              <span className="text-white">{folder.name}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <FolderIcon className="w-12 h-12 text-gray-500 mx-auto mb-3" />
+                        <p className="text-gray-400">No folders found</p>
                       </div>
                     )}
-
-                    {/* Analyze Button */}
-                    {selectedDocuments.length > 0 && (
-                      <button
-                        onClick={analyzeDocuments}
-                        disabled={loading}
-                        className="w-full mt-8 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 px-8 rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-purple-700 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 shadow-xl"
-                      >
-                        {loading ? (
-                          <div className="flex items-center justify-center space-x-3">
-                            <Loader2 className="w-6 h-6 animate-spin" />
-                            <span>Analyzing...</span>
-                          </div>
-                        ) : (
-                          <div className="flex items-center justify-center space-x-3">
-                            <Sparkles className="w-6 h-6" />
-                            <span>Analyze Documents</span>
-                            <ArrowRight className="w-5 h-5" />
-                          </div>
-                        )}
-                      </button>
-                    )}
-                  </>
+                  </div>
                 )}
               </div>
             )}

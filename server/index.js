@@ -79,11 +79,21 @@ const upload = multer({
 });
 
 // Google OAuth configuration
-const oauth2Client = new google.auth.OAuth2(
-  process.env.GOOGLE_CLIENT_ID,
-  process.env.GOOGLE_CLIENT_SECRET,
-  process.env.GOOGLE_REDIRECT_URI || 'https://typapp.netlify.app/auth/callback'
-);
+let oauth2Client = null;
+let isOAuthConfigured = false;
+
+// Check if OAuth credentials are available
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+  oauth2Client = new google.auth.OAuth2(
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET,
+    process.env.GOOGLE_REDIRECT_URI || 'https://typapp.netlify.app/auth/callback'
+  );
+  isOAuthConfigured = true;
+  console.log('Google OAuth2 configured successfully');
+} else {
+  console.log('Google OAuth2 credentials not found, using service account fallback');
+}
 
 // Google Drive API setup
 const drive = google.drive('v3');
@@ -96,6 +106,13 @@ app.get('/api/health', (req, res) => {
 
 // Google OAuth endpoints
 app.get('/api/auth/google', (req, res) => {
+  if (!isOAuthConfigured || !oauth2Client) {
+    return res.status(400).json({ 
+      error: 'Google OAuth not configured',
+      message: 'OAuth credentials are not set up on the server. Please contact the administrator.'
+    });
+  }
+
   const scopes = [
     'https://www.googleapis.com/auth/drive.readonly',
     'https://www.googleapis.com/auth/documents.readonly'
@@ -111,6 +128,10 @@ app.get('/api/auth/google', (req, res) => {
 });
 
 app.get('/api/auth/callback', async (req, res) => {
+  if (!isOAuthConfigured || !oauth2Client) {
+    return res.redirect('https://typapp.netlify.app?error=oauth_not_configured');
+  }
+
   try {
     const { code } = req.query;
     
@@ -133,19 +154,47 @@ app.get('/api/auth/callback', async (req, res) => {
 // Get Google Drive folders
 app.get('/api/folders', async (req, res) => {
   try {
-    // Check if we have valid credentials
-    if (!oauth2Client.credentials || !oauth2Client.credentials.access_token) {
-      return res.status(401).json({ error: 'Google Drive authorization required' });
+    // If OAuth is configured, check for valid credentials
+    if (isOAuthConfigured && oauth2Client) {
+      if (!oauth2Client.credentials || !oauth2Client.credentials.access_token) {
+        return res.status(401).json({ error: 'Google Drive authorization required' });
+      }
+      
+      const response = await drive.files.list({
+        auth: oauth2Client,
+        q: "mimeType='application/vnd.google-apps.folder' and trashed=false",
+        fields: 'files(id, name, parents)',
+        orderBy: 'name'
+      });
+
+      return res.json(response.data.files);
     }
     
-    const response = await drive.files.list({
-      auth: oauth2Client,
-      q: "mimeType='application/vnd.google-apps.folder' and trashed=false",
-      fields: 'files(id, name, parents)',
-      orderBy: 'name'
-    });
+    // Fallback to service account if OAuth is not configured
+    if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+      const auth = new google.auth.GoogleAuth({
+        keyFile: process.env.GOOGLE_APPLICATION_CREDENTIALS,
+        scopes: ['https://www.googleapis.com/auth/drive.readonly']
+      });
+      
+      const response = await drive.files.list({
+        auth: auth,
+        q: "mimeType='application/vnd.google-apps.folder' and trashed=false",
+        fields: 'files(id, name, parents)',
+        orderBy: 'name'
+      });
 
-    res.json(response.data.files);
+      return res.json(response.data.files);
+    }
+    
+    // Return demo data if no Google credentials are available
+    console.log('No Google credentials found, returning demo data');
+    return res.json([
+      { id: 'demo-folder-1', name: 'Demo Documents', parents: [] },
+      { id: 'demo-folder-2', name: 'Work Projects', parents: [] },
+      { id: 'demo-folder-3', name: 'Personal Files', parents: [] }
+    ]);
+    
   } catch (error) {
     console.error('Error fetching folders:', error);
     
