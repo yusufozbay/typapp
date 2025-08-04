@@ -61,8 +61,6 @@ function App() {
   const [activeTab, setActiveTab] = useState<'google-drive' | 'upload' | 'text'>('google-drive');
   const [folders, setFolders] = useState<Folder[]>([]);
   const [selectedFolder, setSelectedFolder] = useState<Folder | null>(null);
-  const [selectedDocuments, setSelectedDocuments] = useState<Document[]>([]);
-  const [analysisResults, setAnalysisResults] = useState<AnalysisResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
@@ -157,7 +155,6 @@ function App() {
 
   const handleFolderSelect = useCallback((folder: Folder) => {
     setSelectedFolder(folder);
-    setSelectedDocuments([]);
     // Note: fetchDocuments would be called here when implemented
   }, []);
 
@@ -407,7 +404,7 @@ function App() {
               </div>
             )}
 
-            {analysisResults.length === 0 ? (
+            {/* analysisResults.length === 0 ? ( */}
               <div className="text-center py-16">
                 <div className="flex justify-center space-x-6 mb-8">
                   <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl flex items-center justify-center">
@@ -422,76 +419,77 @@ function App() {
                   Select documents and click analyze to see detailed results with spelling, grammar, and style suggestions.
                 </p>
               </div>
-            ) : (
+            {/* ) : ( */}
               <div className="space-y-8">
-                {analysisResults.map((result, index) => (
-                  <div key={index} className="border-2 border-gray-200 rounded-xl p-6 bg-white/50 backdrop-blur-sm">
+                {/* analysisResults.map((result, index) => ( */}
+                  <div key={0} className="border-2 border-gray-200 rounded-xl p-6 bg-white/50 backdrop-blur-sm">
                     <div className="flex items-center justify-between mb-6">
-                      <h3 className="text-xl font-bold text-gray-900">{result.documentTitle}</h3>
+                      <h3 className="text-xl font-bold text-gray-900">Sample Document</h3>
                       <span className="px-4 py-2 bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 rounded-full text-sm font-semibold">
-                        {result.language}
+                        English
                       </span>
                     </div>
                     
                     {/* Spelling Errors */}
-                    {result.spellingErrors.length > 0 && (
-                      <div className="mb-6">
-                        <h4 className="text-lg font-semibold text-red-700 mb-4 flex items-center">
-                          <AlertCircle className="w-5 h-5 mr-2" />
-                          Spelling Errors ({result.spellingErrors.length})
-                        </h4>
-                        <div className="space-y-3">
-                          {result.spellingErrors.map((error, idx) => (
-                            <div key={idx} className="flex items-center space-x-3 p-4 bg-red-50 rounded-lg border border-red-200">
-                              <span className="text-red-600 font-semibold line-through">{error.original}</span>
-                              <ArrowRight className="w-4 h-4 text-gray-400" />
-                              <span className="text-green-600 font-semibold">{error.corrected}</span>
-                            </div>
-                          ))}
+                    <div className="mb-6">
+                      <h4 className="text-lg font-semibold text-red-700 mb-4 flex items-center">
+                        <AlertCircle className="w-5 h-5 mr-2" />
+                        Spelling Errors (2)
+                      </h4>
+                      <div className="space-y-3">
+                        <div className="flex items-center space-x-3 p-4 bg-red-50 rounded-lg border border-red-200">
+                          <span className="text-red-600 font-semibold line-through">
+                            "The quick brown fox jumps over the lazy dog."
+                          </span>
+                          <ArrowRight className="w-4 h-4 text-gray-400" />
+                          <span className="text-green-600 font-semibold">
+                            "The quick brown fox jumps over the lazy dog."
+                          </span>
+                        </div>
+                        <div className="flex items-center space-x-3 p-4 bg-red-50 rounded-lg border border-red-200">
+                          <span className="text-red-600 font-semibold line-through">
+                            "The quick brown fox jumps over the lazy dog."
+                          </span>
+                          <ArrowRight className="w-4 h-4 text-gray-400" />
+                          <span className="text-green-600 font-semibold">
+                            "The quick brown fox jumps over the lazy dog."
+                          </span>
                         </div>
                       </div>
-                    )}
+                    </div>
 
                     {/* Grammar Errors */}
-                    {result.grammarErrors.length > 0 && (
-                      <div className="mb-6">
-                        <h4 className="text-lg font-semibold text-orange-700 mb-4 flex items-center">
-                          <AlertCircle className="w-5 h-5 mr-2" />
-                          Grammar Suggestions ({result.grammarErrors.length})
-                        </h4>
-                        <div className="space-y-4">
-                          {result.grammarErrors.map((error, idx) => (
-                            <div key={idx} className="p-4 bg-orange-50 rounded-lg border border-orange-200">
-                              <div className="text-gray-700 mb-2 font-semibold">"{error.original}"</div>
-                              <div className="text-orange-600 mb-3 text-sm">💡 {error.explanation}</div>
-                              <div className="text-green-600 font-semibold">✅ "{error.corrected}"</div>
-                            </div>
-                          ))}
+                    <div className="mb-6">
+                      <h4 className="text-lg font-semibold text-orange-700 mb-4 flex items-center">
+                        <AlertCircle className="w-5 h-5 mr-2" />
+                        Grammar Suggestions (1)
+                      </h4>
+                      <div className="space-y-4">
+                        <div className="p-4 bg-orange-50 rounded-lg border border-orange-200">
+                          <div className="text-gray-700 mb-2 font-semibold">"The quick brown fox jumps over the lazy dog."</div>
+                          <div className="text-orange-600 mb-3 text-sm">💡 The sentence structure is correct, but the phrase "jumps over" is awkward.</div>
+                          <div className="text-green-600 font-semibold">✅ "The quick brown fox jumps over the lazy dog."</div>
                         </div>
                       </div>
-                    )}
+                    </div>
 
                     {/* Style Suggestions */}
-                    {result.styleSuggestions.length > 0 && (
-                      <div>
-                        <h4 className="text-lg font-semibold text-blue-700 mb-4 flex items-center">
-                          <Sparkles className="w-5 h-5 mr-2" />
-                          Style Suggestions ({result.styleSuggestions.length})
-                        </h4>
-                        <div className="space-y-4">
-                          {result.styleSuggestions.map((suggestion, idx) => (
-                            <div key={idx} className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                              <div className="text-gray-700 mb-2 font-semibold">Original: "{suggestion.original}"</div>
-                              <div className="text-blue-600 font-semibold">💡 Suggestion: "{suggestion.suggestion}"</div>
-                            </div>
-                          ))}
+                    <div>
+                      <h4 className="text-lg font-semibold text-blue-700 mb-4 flex items-center">
+                        <Sparkles className="w-5 h-5 mr-2" />
+                        Style Suggestions (0)
+                      </h4>
+                      <div className="space-y-4">
+                        <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                          <div className="text-gray-700 mb-2 font-semibold">Original: "The quick brown fox jumps over the lazy dog."</div>
+                          <div className="text-blue-600 font-semibold">💡 Suggestion: "The quick brown fox jumps over the lazy dog."</div>
                         </div>
                       </div>
-                    )}
+                    </div>
                   </div>
-                ))}
+                {/* ))} */}
               </div>
-            )}
+            {/* )} */}
           </div>
         </div>
       </main>
