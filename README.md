@@ -103,7 +103,7 @@ npm start
    - Connect your GitHub repository: `https://github.com/yusufozbay/typapp`
 
 2. **Configure Build Settings**:
-   - Build command: `cd client && npm install && npm run build`
+   - Build command: `cd client && npm install --legacy-peer-deps && npm run build`
    - Publish directory: `client/build`
 
 3. **Set Environment Variables**:

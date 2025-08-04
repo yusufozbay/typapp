@@ -1,6 +1,6 @@
 [build]
   # Build command for the frontend
-  command = "cd client && npm install && npm run build"
+  command = "cd client && npm install --legacy-peer-deps && npm run build"
   
   # Publish directory (where the built files are located)
   publish = "client/build"
