@@ -19,7 +19,8 @@ import FileUploader from './components/FileUploader';
 import './App.css';
 
 // Clean UI Design - Professional & Modern
-// Version: 3.0 - Clean Design
+// Version: 3.1 - Force Cache Bust
+// Build: 2024-08-04 16:50:00
 
 interface Folder {
   id: string;
